@@ -14,76 +14,87 @@ inline void rotate_point(cCoord &origin, float angle, Block &p) {
 }
 
 Structure::Structure(int type) : struct_type(type), origin(Game::struct_origins[type]) {
+    coords.resize(4);
     for (int i = 0; i < MAX_COORDINATES; ++i) {
         coords.at(i).set_x(Game::struct_coords[type][i].get_x());
         coords.at(i).set_y(Game::struct_coords[type][i].get_y());
     }
 }
 
+Structure::Structure(const Structure &s) : struct_type(s.struct_type), origin(s.origin), coords(s.coords) {}
+
 Structure Structure::rotate_left() {
-    for (auto &c : coords)
-        rotate_point(origin, 1.5708, c);
+    std::vector<Block> temp(coords);    // Create a temporary array to make
+                                        // sure the structure doesn't go out of bounds
+    for (auto &b : temp) {
+        rotate_point(origin, 1.5708, b);
+
+        // If out of bounds, do not rotate the original structure
+        if (b.get_x() > Game::width - 1 || b.get_x() < 0 || b.get_y() > Game::height - 1 || b.get_y() < 0)
+            return *this;
+    }
+    for (int i = 0; i < coords.size(); ++i)
+        coords[i] = temp[i];
     return *this;
 }
 
 Structure Structure::rotate_right() {
-    for (auto &c : coords)
-        rotate_point(origin, -1.5708, c);
+    std::vector<Block> temp(coords);    // Create a temporary array to make
+                                        // sure the structure doesn't go out of bounds
+    for (auto &b : temp) {
+        rotate_point(origin, -1.5708, b);
+
+        // If out of bounds, do not rotate the original structure
+        if (b.get_x() > Game::width - 1 || b.get_x() < 0 || b.get_y() > Game::height - 1 || b.get_y() < 0)
+            return *this;
+    }
+    for (int i = 0; i < coords.size(); ++i)
+        coords[i] = temp[i];
     return *this;
 }
 
-Structure Structure::move_down() {
-    for (auto &c : coords)
-        c.move_down();
-    if (!(origin.get_y() >= Game::height - 1))
+bool Structure::move_down() {
+    for (auto &b : coords) {
+        if (b.get_y() >= Game::height - 1 || Game::collision_detector_y(b.get_x(), b.get_y() + 1))
+            return true;
+    }
+    for (auto &b : coords)
+        b.move_down();
+    if (origin.get_y() <= Game::height - 1)
         origin.set_y(origin.get_y() + 1);
-    return *this;
+    return false;
 }
 
 Structure Structure::move_left() {
-    if (!can_move_left)
-        return *this;
-    bool cannot_move_left_flag = false;
-    bool cannot_move_right_flag = false;
-    for (auto &c : coords) {
-        c.move_left();
-        if (c.get_x() <= 0) {
-            can_move_left = false;
-            cannot_move_left_flag = true;
-        }
-        if (c.get_x() >= Game::width - 1) {
-            can_move_right = false;
-            cannot_move_right_flag = true;
-        }
+    std::vector<Block> temp(coords);    // Create a temporary array to make sure the
+                                        // structure doesn't go out of bounds
+
+    for (auto &b : temp) {
+        b.move_left();
+
+        // If out of bounds, do not move the original structure
+        if (b.get_x() > Game::width - 1 || b.get_x() < 0 || Game::collision_detector_x(b.get_x() - 1, b.get_y()))
+            return *this;
     }
-    if (!cannot_move_left_flag)
-        can_move_left = true;
-    if (!cannot_move_right_flag)
-        can_move_right = true;
+    for (int i = 0; i < coords.size(); ++i)
+        coords[i] = temp[i];
     origin.set_x(origin.get_x() - 1);
     return *this;
 }
 
 Structure Structure::move_right() {
-    if (!can_move_right)
+    std::vector<Block> temp(coords);    // Create a temporary array to make sure the
+                                        // structure doesn't go out of bounds
+
+    for (auto &b : temp) {
+        b.move_right();
+
+        // If out of bounds, do not move the original structure
+        if (b.get_x() > Game::width - 1 || b.get_x() < 0 || Game::collision_detector_x(b.get_x() + 1, b.get_y()))
         return *this;
-    bool cannot_move_left_flag = false;
-    bool cannot_move_right_flag = false;
-    for (auto &c : coords) {
-        c.move_right();
-        if (c.get_x() <= 0) {
-            can_move_left = false;
-            cannot_move_left_flag = true;
-        }
-        if (c.get_x() >= Game::width - 1) {
-            can_move_right = false;
-            cannot_move_right_flag = true;
-        }
     }
-    if (!cannot_move_left_flag)
-        can_move_left = true;
-    if (!cannot_move_right_flag)
-        can_move_right = true;
+    for (int i = 0; i < coords.size(); ++i)
+        coords[i] = temp[i];
     origin.set_x(origin.get_x() + 1);
     return *this;
 }

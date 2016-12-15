@@ -43,7 +43,7 @@ cCoord.h
 /Users/MrIggyman1234/ClionProjects/Tetris/cCoord.h
 Block.h
 /Users/MrIggyman1234/ClionProjects/Tetris/Block.h
-array
+vector
 -
 
 /Users/MrIggyman1234/ClionProjects/Tetris/cCoord.cpp

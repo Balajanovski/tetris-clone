@@ -17,9 +17,9 @@ public:
 
     ~Block() = default;
 
-    void move_down(); // inline
-    void move_right() { coord.set_x(coord.get_x() + 1); }
-    void move_left() { coord.set_x(coord.get_x() - 1); }
+    void move_down();
+    void move_right();
+    void move_left();
 
     // Setter functions
     Block set_x(int x) { coord.set_x(x); return *this; }

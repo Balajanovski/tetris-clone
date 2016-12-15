@@ -74,14 +74,19 @@ void Game::matrix_init() {
     for (y = 0; y < height; y++) {
         for (x = 0; x < width; x++) {
             bool foundBlockFlag = false;
-            std::array<Block, 4>::const_iterator iter2;
 
             for (auto iter1 = s.cbegin(); iter1 != s.cend(); ++iter1)
-                for (iter2 = iter1->coords.cbegin(); iter2 != iter1->coords.cend(); ++iter2)
+                for (auto iter2 = iter1->coords.cbegin(); iter2 != iter1->coords.cend(); ++iter2)
                     if (x == iter2->get_x() && y == iter2->get_y()) {
                         printw("█");
+                        foundBlockFlag = true;
                         break;
                     }
+
+            if (!foundBlockFlag) {
+                move(y, x);
+                printw(" ");
+            }
         }
         move(y, x);
         printw("\n");
@@ -92,17 +97,17 @@ void Game::draw () {
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
 
-            bool foundBlock = false;
+            bool foundBlockFlag = false;
             for (auto iter1 = s.cbegin(); iter1 != s.cend(); ++iter1)
                 for (auto iter2 = iter1->coords.cbegin(); iter2 != iter1->coords.cend(); ++iter2)
                     if (x == iter2->get_x() && y == iter2->get_y() && static_cast<char>(mvinch(y, x)) != blockChar) {
                         move(y, x);
                         printw("█");
-                        foundBlock = true;
+                        foundBlockFlag = true;
                         break;
                     }
 
-            if (!foundBlock) {
+            if (!foundBlockFlag) {
                 move(y, x);
                 printw(" ");
             }
@@ -112,13 +117,81 @@ void Game::draw () {
 
 void Game::controls () {
     switch(getch()) {
-        case 'a' : case 'A' :
+        case 'q' : case 'Q' :
             get_last_block().rotate_left();
+            break;
+        case 'e' : case 'E' :
+            get_last_block().rotate_right();
+            break;
+        case 'a' : case 'A' :
+            get_last_block().move_left();
             break;
         case 'd' : case 'D' :
-            get_last_block().rotate_left();
+            get_last_block().move_right();
+            break;
+        case 'x' : case 'X' :
+            gameOver = true;
+            break;
+        case 's' : case 'S' :
+            setSpeed(100);
             break;
     }
+}
+
+void Game::destroy() {
+    int counter = 0;
+    for (int y = height-1; y >= 1; --y) {
+        for (int x = 0; x < width; ++x) {
+            if (mvinch(y, x) == blockChar) {
+                ++counter;
+            }
+            if (counter >= width) {
+                for (auto iter1 = s.begin(); iter1 != s.end(); ++iter1) {
+                    for (auto iter2 = iter1->coords.begin(); iter2 != iter1->coords.end(); ++iter2) {
+                        if (iter2->get_y() == y)
+                            iter1->coords.erase(iter2);
+                    }
+                }
+            }
+        }
+        counter = 0;
+    }
+}
+
+void Game::gameOverChecker() {
+    if(s.size() < 2)
+        return;
+    Structure block = *(s.end() - 2);
+    for (auto iter1 = block.coords.cbegin(); iter1 != block.coords.cend(); ++iter1) {
+        if (iter1->get_y() <= 1) {
+            gameOver = true;
+            return;
+        }
+    }
+}
+
+int Game::getSpeed() const {
+    return speed;
+}
+
+void Game::setSpeed(int speed) {
+    Game::speed = speed;
+}
+
+bool Game::collision_detector_y(int x, int y) {
+    for (auto i1 = s.cbegin(); i1 != s.end() - 1; ++i1)
+        for (auto i2 = i1->coords.cbegin(); i2 != i1->coords.cend(); ++i2)
+            if (i2->get_y() == y && i2->get_x() == x)
+                return true;
+    return false;
+}
+
+bool Game::collision_detector_x(int x, int y) {
+    for (auto i1 = s.cbegin(); i1 != s.end() - 1; ++i1)
+        for (auto i2 = i1->coords.cbegin(); i2 != i1->coords.cend(); ++i2)
+            if (i2->get_x() == x && i2->get_y() == y)
+                return true;
+    return false;
 }
 
 

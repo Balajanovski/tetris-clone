@@ -7,7 +7,7 @@
 
 #include "cCoord.h"
 #include "Block.h"
-#include <array>
+#include <vector>
 
 class Structure {
     private:
@@ -15,18 +15,20 @@ class Structure {
         cCoord origin;
     public:
         Structure(int type);
+        Structure(const Structure&);
+        ~Structure() = default;
 
         Structure rotate_left();
         Structure rotate_right();
 
-        Structure move_down();
+        bool move_down();
         Structure move_left();
         Structure move_right();
 
         bool can_move_right = true;
-        bool can_move_left = true;
+        bool can_move_left = false;
 
-        std::array<Block, 4> coords;
+        std::vector<Block> coords;
 };
 
 
