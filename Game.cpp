@@ -146,10 +146,11 @@ void Game::destroy() {
                 ++counter;
             }
             if (counter >= width) {
+                int delete_y = y;
                 for (auto iter1 = s.begin(); iter1 != s.end(); ++iter1) {
-                    for (auto iter2 = iter1->coords.begin(); iter2 != iter1->coords.end(); ++iter2) {
-                        if (iter2->get_y() == y)
-                            iter1->coords.erase(iter2);
+                    for (auto iter2 = iter1->coords.begin(); iter2 != iter1->coords.end() && iter2 != iter1->coords.end() + 1; ++iter2) {
+                        if (iter2->get_y() == delete_y)
+                            iter2 = iter1->coords.erase(iter2);
                     }
                 }
             }

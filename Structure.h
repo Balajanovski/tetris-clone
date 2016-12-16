@@ -16,7 +16,6 @@ class Structure {
     public:
         Structure(int type);
         Structure(const Structure&);
-        ~Structure() = default;
 
         Structure rotate_left();
         Structure rotate_right();
