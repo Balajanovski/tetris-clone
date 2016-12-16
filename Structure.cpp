@@ -30,7 +30,7 @@ Structure Structure::rotate_left() {
         rotate_point(origin, 1.5708, b);
 
         // If out of bounds, do not rotate the original structure
-        if (b.get_x() > Game::width - 1 || b.get_x() < 0 || b.get_y() > Game::height - 1 || b.get_y() < 0)
+        if (b.get_x() > Game::width - 1 || b.get_x() < 0 || b.get_y() > Game::height - 1 || b.get_y() < 0 || Game::collision_detector_x(b.get_x(), b.get_y()))
             return *this;
     }
     for (int i = 0; i < coords.size(); ++i)
@@ -45,7 +45,7 @@ Structure Structure::rotate_right() {
         rotate_point(origin, -1.5708, b);
 
         // If out of bounds, do not rotate the original structure
-        if (b.get_x() > Game::width - 1 || b.get_x() < 0 || b.get_y() > Game::height - 1 || b.get_y() < 0)
+        if (b.get_x() > Game::width - 1 || b.get_x() < 0 || b.get_y() > Game::height - 1 || b.get_y() < 0 || Game::collision_detector_x(b.get_x(), b.get_y()))
             return *this;
     }
     for (int i = 0; i < coords.size(); ++i)
