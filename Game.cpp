@@ -56,7 +56,7 @@ Game::Game() {
 
 
 inline void Game::create_block() {
-    s.push_back(Structure(get_next_block()));
+    s.push_back(Structure(get_next_block(), get_next_block()));
 }
 
 inline Structure& Game::get_last_block() {
@@ -75,14 +75,18 @@ void Game::matrix_init() {
         for (x = 0; x < width; x++) {
             bool foundBlockFlag = false;
 
+            // Cycle through x and y, if x and y match with block, draw block
             for (auto iter1 = s.cbegin(); iter1 != s.cend(); ++iter1)
                 for (auto iter2 = iter1->coords.cbegin(); iter2 != iter1->coords.cend(); ++iter2)
                     if (x == iter2->get_x() && y == iter2->get_y()) {
+                        attron(COLOR_PAIR(iter1->getColor()));
                         printw("█");
+                        attroff(COLOR_PAIR(iter1->getColor()));
                         foundBlockFlag = true;
                         break;
                     }
 
+            // If nothing matches, draw a space
             if (!foundBlockFlag) {
                 move(y, x);
                 printw(" ");
@@ -96,17 +100,21 @@ void Game::matrix_init() {
 void Game::draw () {
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
-
             bool foundBlockFlag = false;
+
+            // Cycle through x and y, if there is a block where there isn't a block drawn, draw one
             for (auto iter1 = s.cbegin(); iter1 != s.cend(); ++iter1)
                 for (auto iter2 = iter1->coords.cbegin(); iter2 != iter1->coords.cend(); ++iter2)
                     if (x == iter2->get_x() && y == iter2->get_y() && static_cast<char>(mvinch(y, x)) != blockChar) {
+                        attron(COLOR_PAIR(iter1->getColor()));
                         move(y, x);
                         printw("█");
+                        attroff(COLOR_PAIR(iter1->getColor()));
                         foundBlockFlag = true;
                         break;
                     }
 
+            // If nothing matches, draw a space
             if (!foundBlockFlag) {
                 move(y, x);
                 printw(" ");
@@ -140,21 +148,35 @@ void Game::controls () {
 
 void Game::destroy() {
     int counter = 0;
+    int delete_y;
+    bool fall_flag;
     for (int y = height-1; y >= 1; --y) {
+        fall_flag = false;
         for (int x = 0; x < width; ++x) {
             if (mvinch(y, x) == blockChar) {
                 ++counter;
             }
             if (counter >= width) {
-                int delete_y = y;
-                for (auto iter1 = s.begin(); iter1 != s.end(); ++iter1) {
-                    for (auto iter2 = iter1->coords.begin(); iter2 != iter1->coords.end() && iter2 != iter1->coords.end() + 1; ++iter2) {
-                        if (iter2->get_y() == delete_y)
+                delete_y = y;
+                for (auto iter1 = s.begin(); iter1 != s.end(); ++iter1)
+                    for (auto iter2 = iter1->coords.begin(); iter2 != iter1->coords.end();) {
+                        if (iter2->get_y() == delete_y) {
                             iter2 = iter1->coords.erase(iter2);
+                            fall_flag = true;
+                            continue;
+                        }
+                        ++iter2;
                     }
-                }
             }
         }
+        if (fall_flag)
+            for (int y = delete_y - 1; y >= 0; --y) {
+                for (auto iter1 = s.begin(); iter1 != s.end(); ++iter1)
+                    for (auto iter2 = iter1->coords.begin(); iter2 != iter1->coords.end(); ++iter2) {
+                        if (iter2->get_y() == y)
+                            iter2->move_down();
+                    }
+            }
         counter = 0;
     }
 }

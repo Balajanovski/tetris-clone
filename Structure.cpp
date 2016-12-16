@@ -13,7 +13,7 @@ inline void rotate_point(cCoord &origin, float angle, Block &p) {
     p.set_y(y1);
 }
 
-Structure::Structure(int type) : struct_type(type), origin(Game::struct_origins[type]) {
+Structure::Structure(int type, int c) : struct_type(type), origin(Game::struct_origins[type]), color(c) {
     coords.resize(4);
     for (int i = 0; i < MAX_COORDINATES; ++i) {
         coords.at(i).set_x(Game::struct_coords[type][i].get_x());
@@ -21,7 +21,7 @@ Structure::Structure(int type) : struct_type(type), origin(Game::struct_origins[
     }
 }
 
-Structure::Structure(const Structure &s) : struct_type(s.struct_type), origin(s.origin), coords(s.coords) {}
+Structure::Structure(const Structure &s) : struct_type(s.struct_type), origin(s.origin), coords(s.coords), color(s.color) {}
 
 Structure Structure::rotate_left() {
     std::vector<Block> temp(coords);    // Create a temporary array to make
@@ -97,4 +97,8 @@ Structure Structure::move_right() {
         coords[i] = temp[i];
     origin.set_x(origin.get_x() + 1);
     return *this;
+}
+
+int Structure::getColor() const {
+    return color;
 }

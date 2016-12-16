@@ -1,0 +1,3 @@
+/Users/MrIggyman1234/ClionProjects/Tetris/CMakeFiles/edit_cache.dir
+/Users/MrIggyman1234/ClionProjects/Tetris/CMakeFiles/rebuild_cache.dir
+/Users/MrIggyman1234/ClionProjects/Tetris/CMakeFiles/Tetris.dir
