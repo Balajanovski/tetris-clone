@@ -8,6 +8,7 @@
 #include <vector>
 #include "Structure.h"
 
+// Contains all the block structures that have fallen down, and are still falling
 extern std::vector<Structure> s;
 
 #endif //TETRIS_GLOBALS_H
