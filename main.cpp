@@ -34,7 +34,6 @@ int main() {
             game.setSpeed(DEFAULT_SPEED);
         game.draw();
         game.gameOverChecker();
-        refresh();
     }
     endwin();
     return 0;
