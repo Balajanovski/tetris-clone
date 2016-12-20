@@ -32,14 +32,14 @@ Structure::Structure(int type, int c) : struct_type(type), origin(Game::struct_o
 
 Structure::Structure(const Structure &s) : struct_type(s.struct_type), origin(s.origin), color(s.color), coords(s.coords) {}
 
-Structure Structure::rotate_left(std::vector<Structure> &s) {
+Structure Structure::rotate_left(std::vector<Structure> &structList) {
     std::vector<Block> temp(coords);    // Create a temporary array to make
                                         // sure the structure doesn't go out of bounds
     for (auto &b : temp) {
         rotate_point(origin, Structure::left, b);
 
         // If out of bounds, do not rotate the original structure
-        if (b.get_x() > Game::width - 1 || b.get_x() < 0 || b.get_y() > Game::height - 1 || b.get_y() < 0 || Game::collision_detector_x(b.get_x(), b.get_y(), s))
+        if (b.get_x() > Game::width - 1 || b.get_x() < 0 || b.get_y() > Game::height - 1 || b.get_y() < 0 || Game::collision_detector_x(b.get_x(), b.get_y(), structList))
             return *this;
     }
     for (int i = 0; i < coords.size(); ++i)
@@ -47,14 +47,14 @@ Structure Structure::rotate_left(std::vector<Structure> &s) {
     return *this;
 }
 
-Structure Structure::rotate_right(std::vector<Structure> &s) {
+Structure Structure::rotate_right(std::vector<Structure> &structList) {
     std::vector<Block> temp(coords);    // Create a temporary array to make
                                         // sure the structure doesn't go out of bounds
     for (auto &b : temp) {
         rotate_point(origin, Structure::right, b);
 
         // If out of bounds, do not rotate the original structure
-        if (b.get_x() > Game::width - 1 || b.get_x() < 0 || b.get_y() > Game::height - 1 || b.get_y() < 0 || Game::collision_detector_x(b.get_x(), b.get_y(), s))
+        if (b.get_x() > Game::width - 1 || b.get_x() < 0 || b.get_y() > Game::height - 1 || b.get_y() < 0 || Game::collision_detector_x(b.get_x(), b.get_y(), structList))
             return *this;
     }
     for (int i = 0; i < coords.size(); ++i)
@@ -62,9 +62,9 @@ Structure Structure::rotate_right(std::vector<Structure> &s) {
     return *this;
 }
 
-bool Structure::move_down(std::vector<Structure> &s) {
+bool Structure::move_down(std::vector<Structure> &structList) {
     for (auto &b : coords) {
-        if (b.get_y() >= Game::height - 1 || Game::collision_detector_y(b.get_x(), b.get_y() + 1, s))
+        if (b.get_y() >= Game::height - 1 || Game::collision_detector_y(b.get_x(), b.get_y() + 1, structList))
             return true;
     }
     for (auto &b : coords)
@@ -74,7 +74,7 @@ bool Structure::move_down(std::vector<Structure> &s) {
     return false;
 }
 
-Structure Structure::move_left(std::vector<Structure> &s) {
+Structure Structure::move_left(std::vector<Structure> &structList) {
     std::vector<Block> temp(coords);    // Create a temporary array to make sure the
     // structure doesn't go out of bounds
 
@@ -82,7 +82,7 @@ Structure Structure::move_left(std::vector<Structure> &s) {
         b.move_left();
 
         // If out of bounds, do not move the original structure
-        if (b.get_x() > Game::width - 1 || b.get_x() < 0 || Game::collision_detector_x(b.get_x(), b.get_y(), s))
+        if (b.get_x() > Game::width - 1 || b.get_x() < 0 || Game::collision_detector_x(b.get_x(), b.get_y(), structList))
             return *this;
     }
     for (int i = 0; i < coords.size(); ++i)
@@ -91,7 +91,7 @@ Structure Structure::move_left(std::vector<Structure> &s) {
     return *this;
 }
 
-Structure Structure::move_right(std::vector<Structure> &s) {
+Structure Structure::move_right(std::vector<Structure> &structList) {
     std::vector<Block> temp(coords);    // Create a temporary array to make sure the
                                         // structure doesn't go out of bounds
 
@@ -99,7 +99,7 @@ Structure Structure::move_right(std::vector<Structure> &s) {
         b.move_right();
 
         // If out of bounds, do not move the original structure
-        if (b.get_x() > Game::width - 1 || b.get_x() < 0 || Game::collision_detector_x(b.get_x(), b.get_y(), s))
+        if (b.get_x() > Game::width - 1 || b.get_x() < 0 || Game::collision_detector_x(b.get_x(), b.get_y(), structList))
             return *this;
     }
     for (int i = 0; i < coords.size(); ++i)

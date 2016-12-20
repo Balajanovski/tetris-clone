@@ -55,11 +55,11 @@ Game::Game() {
 
 
 inline void Game::create_block() {
-    s.push_back(Structure(get_next_block(), get_next_block()));
+    structList.push_back(Structure(get_next_block(), get_next_block()));
 }
 
 inline Structure& Game::get_last_block() {
-    return *(s.end() - 1);
+    return *(structList.end() - 1);
 }
 
 bool Game::isGameOver() const {
@@ -67,7 +67,7 @@ bool Game::isGameOver() const {
 }
 
 std::vector<Structure>& Game::getStructList() {
-    return s;
+    return structList;
 }
 
 void Game::matrix_init() {
@@ -94,7 +94,7 @@ void Game::matrix_init() {
             bool foundBlockFlag = false;
 
             // Cycle through x and y, if x and y match with block, draw block
-            for (auto iter1 = s.cbegin(); iter1 != s.cend(); ++iter1)
+            for (auto iter1 = structList.cbegin(); iter1 != structList.cend(); ++iter1)
                 for (auto iter2 = iter1->coords.cbegin(); iter2 != iter1->coords.cend(); ++iter2)
                     if (x == iter2->get_x() && y == iter2->get_y()) {
                         attron(COLOR_PAIR(iter1->getColor()));
@@ -121,7 +121,7 @@ void Game::draw () {
             bool foundBlockFlag = false;
 
             // Cycle through x and y, if there is a block where there isn't a block drawn, draw one
-            for (auto iter1 = s.cbegin(); iter1 != s.cend(); ++iter1)
+            for (auto iter1 = structList.cbegin(); iter1 != structList.cend(); ++iter1)
                 for (auto iter2 = iter1->coords.cbegin(); iter2 != iter1->coords.cend(); ++iter2)
                     if (x == iter2->get_x() && y == iter2->get_y() && (mvinch(y, x) & A_CHARTEXT) != (blockChar)) {
                         attron(COLOR_PAIR(iter1->getColor()));
@@ -144,16 +144,16 @@ void Game::draw () {
 void Game::controls () {
     switch(getch()) {
         case 'q' : case 'Q' :
-            get_last_block().rotate_left(s);
+            get_last_block().rotate_left(structList);
             break;
         case 'e' : case 'E' :
-            get_last_block().rotate_right(s);
+            get_last_block().rotate_right(structList);
             break;
         case 'a' : case 'A' :
-            get_last_block().move_left(s);
+            get_last_block().move_left(structList);
             break;
         case 'd' : case 'D' :
-            get_last_block().move_right(s);
+            get_last_block().move_right(structList);
             break;
         case 'x' : case 'X' :
             gameOver = true;
@@ -176,7 +176,7 @@ void Game::destroy() {
             }
             if (counter >= width) {
                 delete_y = y;
-                for (auto iter1 = s.begin(); iter1 != s.end(); ++iter1)
+                for (auto iter1 = structList.begin(); iter1 != structList.end(); ++iter1)
                     for (auto iter2 = iter1->coords.begin(); iter2 != iter1->coords.end();) {
                         if (iter2->get_y() == delete_y) {
                             iter2 = iter1->coords.erase(iter2);
@@ -189,7 +189,7 @@ void Game::destroy() {
         }
         if (fall_flag)
             for (int y = delete_y - 1; y >= 0; --y) {
-                for (auto iter1 = s.begin(); iter1 != s.end(); ++iter1)
+                for (auto iter1 = structList.begin(); iter1 != structList.end(); ++iter1)
                     for (auto iter2 = iter1->coords.begin(); iter2 != iter1->coords.end(); ++iter2) {
                         if (iter2->get_y() == y)
                             iter2->move_down();
@@ -201,9 +201,9 @@ void Game::destroy() {
 }
 
 void Game::gameOverChecker() {
-    if(s.size() < 2)
+    if(structList.size() < 2)
         return;
-    Structure block = *(s.end() - 2);
+    Structure block = *(structList.end() - 2);
     for (auto iter1 = block.coords.cbegin(); iter1 != block.coords.cend(); ++iter1) {
         if (iter1->get_y() <= 1) {
             gameOver = true;
@@ -220,16 +220,16 @@ void Game::setSpeed(int speed) {
     Game::speed = speed;
 }
 
-bool Game::collision_detector_y(int x, int y, std::vector<Structure> &s) {
-    for (auto i1 = s.cbegin(); i1 != s.end() - 1; ++i1)
+bool Game::collision_detector_y(int x, int y, std::vector<Structure> &structList) {
+    for (auto i1 = structList.cbegin(); i1 != structList.end() - 1; ++i1)
         for (auto i2 = i1->coords.cbegin(); i2 != i1->coords.cend(); ++i2)
             if (i2->get_y() == y && i2->get_x() == x)
                 return true;
     return false;
 }
 
-bool Game::collision_detector_x(int x, int y, std::vector<Structure> &s) {
-    for (auto i1 = s.cbegin(); i1 != s.end() - 1; ++i1)
+bool Game::collision_detector_x(int x, int y, std::vector<Structure> &structList) {
+    for (auto i1 = structList.cbegin(); i1 != structList.end() - 1; ++i1)
         for (auto i2 = i1->coords.cbegin(); i2 != i1->coords.cend(); ++i2)
             if (i2->get_x() == x && i2->get_y() == y)
                 return true;

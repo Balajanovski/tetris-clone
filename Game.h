@@ -15,7 +15,7 @@ private:
     int prev_block = 99; /* Previous block, represented by the key */
     bool gameOver = false;
     int speed = 250;
-    std::vector<Structure> s;
+    std::vector<Structure> structList; /* Contains all the structures that have fallen, and are currently falling */
 public:
     /*
      * Block structures key:
@@ -40,8 +40,8 @@ public:
     void create_block();
     Structure& get_last_block();
     void destroy(); // Destroy blocks in a line and then make all blocks ontop fall down
-    static bool collision_detector_y(int x, int y, std::vector<Structure> &s);
-    static bool collision_detector_x(int x, int y, std::vector<Structure> &s);
+    static bool collision_detector_y(int x, int y, std::vector<Structure> &structList);
+    static bool collision_detector_x(int x, int y, std::vector<Structure> &structList);
 
     // Getters
     int get_next_block();
