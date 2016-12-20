@@ -22,12 +22,12 @@ public:
     void move_left();
 
     // Setter functions
-    Block set_x(int x) { coord.set_x(x); return *this; }
-    Block set_y(int y) { coord.set_y(y); return *this; }
+    Block set_x(int x) { coord.x = x; return *this; }
+    Block set_y(int y) { coord.y = y; return *this; }
 
     // Getter functions
-    int get_x() const { return coord.get_x(); }
-    int get_y() const { return coord.get_y(); }
+    int get_x() const { return coord.x; }
+    int get_y() const { return coord.y; }
 };
 
 

@@ -4,10 +4,11 @@
 #include <cmath>
 #include "Structure.h"
 #include "Game.h"
+#include <vector>
 
 inline void rotate_point(cCoord &origin, float angle, Block &p) {
-    int x1 = static_cast<int>(round(cos(angle) * (p.get_x() - origin.get_x()) - sin(angle) * (p.get_y() - origin.get_y()) + origin.get_x()));
-    int y1 = static_cast<int>(round(cos(angle) * (p.get_y() - origin.get_y()) + sin(angle) * (p.get_x() - origin.get_x()) + origin.get_y()));
+    int x1 = static_cast<int>(round(cos(angle) * (p.get_x() - origin.x) - sin(angle) * (p.get_y() - origin.y) + origin.x));
+    int y1 = static_cast<int>(round(cos(angle) * (p.get_y() - origin.y) + sin(angle) * (p.get_x() - origin.x) + origin.y));
 
     p.set_x(x1);
     p.set_y(y1);
@@ -16,21 +17,21 @@ inline void rotate_point(cCoord &origin, float angle, Block &p) {
 Structure::Structure(int type, int c) : struct_type(type), origin(Game::struct_origins[type]), color(c) {
     coords.resize(4);
     for (int i = 0; i < MAX_COORDINATES; ++i) {
-        coords.at(i).set_x(Game::struct_coords[type][i].get_x());
-        coords.at(i).set_y(Game::struct_coords[type][i].get_y());
+        coords.at(i).set_x(Game::struct_coords[type][i].x);
+        coords.at(i).set_y(Game::struct_coords[type][i].y);
     }
 }
 
-Structure::Structure(const Structure &s) : struct_type(s.struct_type), origin(s.origin), coords(s.coords), color(s.color) {}
+Structure::Structure(const Structure &s) : struct_type(s.struct_type), origin(s.origin), color(s.color), coords(s.coords) {}
 
-Structure Structure::rotate_left() {
+Structure Structure::rotate_left(std::vector<Structure> &s) {
     std::vector<Block> temp(coords);    // Create a temporary array to make
                                         // sure the structure doesn't go out of bounds
     for (auto &b : temp) {
         rotate_point(origin, 1.5708, b);
 
         // If out of bounds, do not rotate the original structure
-        if (b.get_x() > Game::width - 1 || b.get_x() < 0 || b.get_y() > Game::height - 1 || b.get_y() < 0 || Game::collision_detector_x(b.get_x(), b.get_y()))
+        if (b.get_x() > Game::width - 1 || b.get_x() < 0 || b.get_y() > Game::height - 1 || b.get_y() < 0 || Game::collision_detector_x(b.get_x(), b.get_y(), s))
             return *this;
     }
     for (int i = 0; i < coords.size(); ++i)
@@ -38,14 +39,14 @@ Structure Structure::rotate_left() {
     return *this;
 }
 
-Structure Structure::rotate_right() {
+Structure Structure::rotate_right(std::vector<Structure> &s) {
     std::vector<Block> temp(coords);    // Create a temporary array to make
                                         // sure the structure doesn't go out of bounds
     for (auto &b : temp) {
         rotate_point(origin, -1.5708, b);
 
         // If out of bounds, do not rotate the original structure
-        if (b.get_x() > Game::width - 1 || b.get_x() < 0 || b.get_y() > Game::height - 1 || b.get_y() < 0 || Game::collision_detector_x(b.get_x(), b.get_y()))
+        if (b.get_x() > Game::width - 1 || b.get_x() < 0 || b.get_y() > Game::height - 1 || b.get_y() < 0 || Game::collision_detector_x(b.get_x(), b.get_y(), s))
             return *this;
     }
     for (int i = 0; i < coords.size(); ++i)
@@ -53,36 +54,36 @@ Structure Structure::rotate_right() {
     return *this;
 }
 
-bool Structure::move_down() {
+bool Structure::move_down(std::vector<Structure> &s) {
     for (auto &b : coords) {
-        if (b.get_y() >= Game::height - 1 || Game::collision_detector_y(b.get_x(), b.get_y() + 1))
+        if (b.get_y() >= Game::height - 1 || Game::collision_detector_y(b.get_x(), b.get_y() + 1, s))
             return true;
     }
     for (auto &b : coords)
         b.move_down();
-    if (origin.get_y() <= Game::height - 1)
-        origin.set_y(origin.get_y() + 1);
+    if (origin.y <= Game::height - 1)
+        origin.y += 1;
     return false;
 }
 
-Structure Structure::move_left() {
+Structure Structure::move_left(std::vector<Structure> &s) {
     std::vector<Block> temp(coords);    // Create a temporary array to make sure the
-                                        // structure doesn't go out of bounds
+    // structure doesn't go out of bounds
 
     for (auto &b : temp) {
         b.move_left();
 
         // If out of bounds, do not move the original structure
-        if (b.get_x() > Game::width - 1 || b.get_x() < 0 || Game::collision_detector_x(b.get_x() - 1, b.get_y()))
+        if (b.get_x() > Game::width - 1 || b.get_x() < 0 || Game::collision_detector_x(b.get_x() - 1, b.get_y(), s))
             return *this;
     }
     for (int i = 0; i < coords.size(); ++i)
         coords[i] = temp[i];
-    origin.set_x(origin.get_x() - 1);
+    origin.x -= 1;
     return *this;
 }
 
-Structure Structure::move_right() {
+Structure Structure::move_right(std::vector<Structure> &s) {
     std::vector<Block> temp(coords);    // Create a temporary array to make sure the
                                         // structure doesn't go out of bounds
 
@@ -90,14 +91,15 @@ Structure Structure::move_right() {
         b.move_right();
 
         // If out of bounds, do not move the original structure
-        if (b.get_x() > Game::width - 1 || b.get_x() < 0 || Game::collision_detector_x(b.get_x() + 1, b.get_y()))
-        return *this;
+        if (b.get_x() > Game::width - 1 || b.get_x() < 0 || Game::collision_detector_x(b.get_x() + 1, b.get_y(), s))
+            return *this;
     }
     for (int i = 0; i < coords.size(); ++i)
         coords[i] = temp[i];
-    origin.set_x(origin.get_x() + 1);
+    origin.x += 1;
     return *this;
 }
+
 
 int Structure::getColor() const {
     return color;

@@ -4,20 +4,19 @@
 #include <random>
 #include <ncurses.h>
 #include "Game.h"
+#include <vector>
 
 int Game::get_next_block() {
+    static std::mt19937 generator(std::random_device{}());
+    std::uniform_int_distribution<int> distribution(0,4);
     int val;
-    while (true) {
-        std::random_device generator;
-        std::uniform_int_distribution<int> distribution(0,4);
-
-        if((val = distribution(generator)) != prev_block)
-            return val;
-    }
+    for (val = distribution(generator); val == prev_block; val = distribution(generator))
+    { }
+    return val;
 }
 
 // Stores template for all the different tetris pieces
-cCoord Game::struct_coords[][MAX_COORDINATES + 1] = {{
+const cCoord Game::struct_coords[][MAX_COORDINATES + 1] = {{
                                                   /* Row: 1 */ {0, 0}, {1, 0}, {2, 0},
                                                   /* Row: 2 */ {0, 1},
                                           },
@@ -41,7 +40,7 @@ cCoord Game::struct_coords[][MAX_COORDINATES + 1] = {{
                                           }};
 
 // Stores the origins coords for all the different tetris pieces
-cCoord Game::struct_origins[MAX_COORDINATES + 1] = {
+const cCoord Game::struct_origins[MAX_COORDINATES + 1] = {
         /* L Shaped */      {0, 0},
         /* Square shaped */ {0, 0},
         /* Stick shaped */  {0, 0},
@@ -67,7 +66,26 @@ bool Game::isGameOver() const {
     return gameOver;
 }
 
+std::vector<Structure>& Game::getStructList() {
+    return s;
+}
+
 void Game::matrix_init() {
+    setlocale(LC_ALL, "");
+    initscr();
+    start_color();
+
+    init_pair(0, COLOR_GREEN, COLOR_BLACK);
+    init_pair(1, COLOR_RED, COLOR_BLACK);
+    init_pair(2, COLOR_BLUE, COLOR_BLACK);
+    init_pair(3, COLOR_YELLOW, COLOR_BLACK);
+    init_pair(4, COLOR_GREEN, COLOR_BLACK);
+
+    curs_set(FALSE);
+    raw();
+    noecho();
+    nodelay(stdscr, TRUE);
+
     int x,
         y;
 
@@ -126,16 +144,16 @@ void Game::draw () {
 void Game::controls () {
     switch(getch()) {
         case 'q' : case 'Q' :
-            get_last_block().rotate_left();
+            get_last_block().rotate_left(s);
             break;
         case 'e' : case 'E' :
-            get_last_block().rotate_right();
+            get_last_block().rotate_right(s);
             break;
         case 'a' : case 'A' :
-            get_last_block().move_left();
+            get_last_block().move_left(s);
             break;
         case 'd' : case 'D' :
-            get_last_block().move_right();
+            get_last_block().move_right(s);
             break;
         case 'x' : case 'X' :
             gameOver = true;
@@ -201,7 +219,7 @@ void Game::setSpeed(int speed) {
     Game::speed = speed;
 }
 
-bool Game::collision_detector_y(int x, int y) {
+bool Game::collision_detector_y(int x, int y, std::vector<Structure> &s) {
     for (auto i1 = s.cbegin(); i1 != s.end() - 1; ++i1)
         for (auto i2 = i1->coords.cbegin(); i2 != i1->coords.cend(); ++i2)
             if (i2->get_y() == y && i2->get_x() == x)
@@ -209,7 +227,7 @@ bool Game::collision_detector_y(int x, int y) {
     return false;
 }
 
-bool Game::collision_detector_x(int x, int y) {
+bool Game::collision_detector_x(int x, int y, std::vector<Structure> &s) {
     for (auto i1 = s.cbegin(); i1 != s.end() - 1; ++i1)
         for (auto i2 = i1->coords.cbegin(); i2 != i1->coords.cend(); ++i2)
             if (i2->get_x() == x && i2->get_y() == y)
