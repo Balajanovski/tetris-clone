@@ -5,11 +5,13 @@
 #ifndef TETRIS_CCOORD_H
 #define TETRIS_CCOORD_H
 
-#define MAX_COORDINATES  4
+
 
 struct cCoord {
     int x,
         y;
+
+    constexpr static int max_coordinates = 4;
 
     cCoord(int a, int b) : x(a), y(b) {};
     cCoord() = default;

@@ -1,14 +1,22 @@
 //
 // Created by JULIA BALAJAN on 3/12/2016.
 //
-#include <cmath>
 #include "Structure.h"
 #include "Game.h"
-#include <vector>
 
-inline void rotate_point(cCoord &origin, float angle, Block &p) {
-    int x1 = static_cast<int>(round(cos(angle) * (p.get_x() - origin.x) - sin(angle) * (p.get_y() - origin.y) + origin.x));
-    int y1 = static_cast<int>(round(cos(angle) * (p.get_y() - origin.y) + sin(angle) * (p.get_x() - origin.x) + origin.y));
+inline void rotate_point(cCoord &origin, int direction, Block &p) {
+    int x1,
+        y1;
+
+    if (direction == Structure::left) {
+        x1 = Structure::cos_left * (p.get_x() - origin.x) - Structure::sin_left * (p.get_y() - origin.y) + origin.x;
+        y1 = Structure::cos_left * (p.get_y() - origin.y) + Structure::sin_left * (p.get_x() - origin.x) + origin.y;
+    }
+
+    else if(direction == Structure::right) {
+        x1 = Structure::cos_right * (p.get_x() - origin.x) - Structure::sin_right * (p.get_y() - origin.y) + origin.x;
+        y1 = Structure::cos_right * (p.get_y() - origin.y) + Structure::sin_right * (p.get_x() - origin.x) + origin.y;
+    }
 
     p.set_x(x1);
     p.set_y(y1);
@@ -16,7 +24,7 @@ inline void rotate_point(cCoord &origin, float angle, Block &p) {
 
 Structure::Structure(int type, int c) : struct_type(type), origin(Game::struct_origins[type]), color(c) {
     coords.resize(4);
-    for (int i = 0; i < MAX_COORDINATES; ++i) {
+    for (int i = 0; i < cCoord::max_coordinates; ++i) {
         coords.at(i).set_x(Game::struct_coords[type][i].x);
         coords.at(i).set_y(Game::struct_coords[type][i].y);
     }
@@ -28,7 +36,7 @@ Structure Structure::rotate_left(std::vector<Structure> &s) {
     std::vector<Block> temp(coords);    // Create a temporary array to make
                                         // sure the structure doesn't go out of bounds
     for (auto &b : temp) {
-        rotate_point(origin, 1.5708, b);
+        rotate_point(origin, Structure::left, b);
 
         // If out of bounds, do not rotate the original structure
         if (b.get_x() > Game::width - 1 || b.get_x() < 0 || b.get_y() > Game::height - 1 || b.get_y() < 0 || Game::collision_detector_x(b.get_x(), b.get_y(), s))
@@ -43,7 +51,7 @@ Structure Structure::rotate_right(std::vector<Structure> &s) {
     std::vector<Block> temp(coords);    // Create a temporary array to make
                                         // sure the structure doesn't go out of bounds
     for (auto &b : temp) {
-        rotate_point(origin, -1.5708, b);
+        rotate_point(origin, Structure::right, b);
 
         // If out of bounds, do not rotate the original structure
         if (b.get_x() > Game::width - 1 || b.get_x() < 0 || b.get_y() > Game::height - 1 || b.get_y() < 0 || Game::collision_detector_x(b.get_x(), b.get_y(), s))
@@ -74,7 +82,7 @@ Structure Structure::move_left(std::vector<Structure> &s) {
         b.move_left();
 
         // If out of bounds, do not move the original structure
-        if (b.get_x() > Game::width - 1 || b.get_x() < 0 || Game::collision_detector_x(b.get_x() - 1, b.get_y(), s))
+        if (b.get_x() > Game::width - 1 || b.get_x() < 0 || Game::collision_detector_x(b.get_x(), b.get_y(), s))
             return *this;
     }
     for (int i = 0; i < coords.size(); ++i)
@@ -91,7 +99,7 @@ Structure Structure::move_right(std::vector<Structure> &s) {
         b.move_right();
 
         // If out of bounds, do not move the original structure
-        if (b.get_x() > Game::width - 1 || b.get_x() < 0 || Game::collision_detector_x(b.get_x() + 1, b.get_y(), s))
+        if (b.get_x() > Game::width - 1 || b.get_x() < 0 || Game::collision_detector_x(b.get_x(), b.get_y(), s))
             return *this;
     }
     for (int i = 0; i < coords.size(); ++i)

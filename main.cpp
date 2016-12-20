@@ -1,6 +1,4 @@
 #include "Game.h"
-#include <ncurses.h>
-#include <clocale>
 
 int main() {
     Game game;

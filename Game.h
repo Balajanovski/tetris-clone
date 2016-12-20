@@ -6,6 +6,7 @@
 #define TETRIS_GAME_H
 
 #include "Structure.h"
+#include <ncurses.h>
 #include <vector>
 
 class Game {
@@ -28,10 +29,10 @@ public:
     constexpr static int height = 24;
     constexpr static int width = 10;
 
-    constexpr static long blockChar = L'\u2588'; /* Constant which represents the value of the block character */
+    constexpr static chtype blockChar = L'\u2588'; /* Constant which represents the value of the block character */
 
-    static const cCoord struct_coords[][MAX_COORDINATES + 1];
-    static const cCoord struct_origins[MAX_COORDINATES + 1];
+    static const cCoord struct_coords[][cCoord::max_coordinates + 1];
+    static const cCoord struct_origins[cCoord::max_coordinates + 1];
 
     Game(); /* Constructor */
 

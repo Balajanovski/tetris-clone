@@ -4,11 +4,11 @@
 #include <random>
 #include <ncurses.h>
 #include "Game.h"
-#include <vector>
+#include <clocale>
 
 int Game::get_next_block() {
     static std::mt19937 generator(std::random_device{}());
-    std::uniform_int_distribution<int> distribution(0,4);
+    std::uniform_int_distribution<int> distribution(0,cCoord::max_coordinates);
     int val;
     for (val = distribution(generator); val == prev_block; val = distribution(generator))
     { }
@@ -16,7 +16,7 @@ int Game::get_next_block() {
 }
 
 // Stores template for all the different tetris pieces
-const cCoord Game::struct_coords[][MAX_COORDINATES + 1] = {{
+const cCoord Game::struct_coords[][cCoord::max_coordinates + 1] = {{
                                                   /* Row: 1 */ {0, 0}, {1, 0}, {2, 0},
                                                   /* Row: 2 */ {0, 1},
                                           },
@@ -40,7 +40,7 @@ const cCoord Game::struct_coords[][MAX_COORDINATES + 1] = {{
                                           }};
 
 // Stores the origins coords for all the different tetris pieces
-const cCoord Game::struct_origins[MAX_COORDINATES + 1] = {
+const cCoord Game::struct_origins[cCoord::max_coordinates + 1] = {
         /* L Shaped */      {0, 0},
         /* Square shaped */ {0, 0},
         /* Stick shaped */  {0, 0},
@@ -123,7 +123,7 @@ void Game::draw () {
             // Cycle through x and y, if there is a block where there isn't a block drawn, draw one
             for (auto iter1 = s.cbegin(); iter1 != s.cend(); ++iter1)
                 for (auto iter2 = iter1->coords.cbegin(); iter2 != iter1->coords.cend(); ++iter2)
-                    if (x == iter2->get_x() && y == iter2->get_y() && static_cast<char>(mvinch(y, x)) != blockChar) {
+                    if (x == iter2->get_x() && y == iter2->get_y() && (mvinch(y, x) & A_CHARTEXT) != (blockChar)) {
                         attron(COLOR_PAIR(iter1->getColor()));
                         move(y, x);
                         printw("█");
@@ -171,7 +171,7 @@ void Game::destroy() {
     for (int y = height-1; y >= 1; --y) {
         fall_flag = false;
         for (int x = 0; x < width; ++x) {
-            if (mvinch(y, x) == blockChar) {
+            if ((mvinch(y, x) & A_CHARTEXT) == (blockChar & A_CHARTEXT)) {
                 ++counter;
             }
             if (counter >= width) {
@@ -195,6 +195,7 @@ void Game::destroy() {
                             iter2->move_down();
                     }
             }
+
         counter = 0;
     }
 }
