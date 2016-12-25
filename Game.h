@@ -14,14 +14,9 @@ friend class Controller;
 private:
     int prev_block = 99; /* Previous block, represented by the key */
     bool gameOver = false;
-    int speed = 250;
     std::vector<Structure> structList; /* Contains all the structures that have fallen, and are currently falling */
 
     // SDL methods and variables
-    constexpr static int screen_width = 400;
-    constexpr static int screen_height = 960;
-    constexpr static int tile_size = 40;
-
     SDL_Event events; // Event queue
 
     SDL_Window *win = nullptr;
@@ -29,6 +24,7 @@ private:
 
     void set_draw_color(const Structure &s);
     void cleanup();
+
 public:
     /*
      * Block structures key:
@@ -40,8 +36,8 @@ public:
      */
     const int default_speed = 300;
 
-    // Height/width not in terms of pixels, in terms of blocks
-    constexpr static int height = 24;
+    // Height/width not in terms of pixels but in terms of blocks
+    constexpr static int height = 25;
     constexpr static int width = 10;
 
     static const cCoord struct_coords[][cCoord::max_coordinates + 1];
@@ -58,11 +54,7 @@ public:
 
     // Getters
     bool isGameOver() const;
-    int getSpeed() const;
     std::vector<Structure> &getStructList();
-
-    // Setters
-    void setSpeed(int speed);
 
     // General game methods
     void init();
@@ -73,6 +65,11 @@ public:
     // Random number generators
     uint8_t get_next_block();
     static uint8_t get_color_value(); // Generates a number from 0 - 255 which will be used when generating block colors
+private:
+    // SDL Constants put in their own private little corner because they hate co-operation, kinda like co-workers
+    constexpr static int tile_size = 40;
+    constexpr static int screen_width = width * tile_size;
+    constexpr static int screen_height = height * tile_size;
 };
 
 

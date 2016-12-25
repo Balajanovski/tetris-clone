@@ -67,7 +67,7 @@ Structure Structure::rotate_right(std::vector<Structure> &structList) {
 bool Structure::move_down(std::vector<Structure> &structList) {
     for (auto &b : coords) {
         if (b.get_y() >= Game::height - 1 || Game::collision_detector_y(b.get_x(), b.get_y() + 1, structList))
-            return true;
+            return true; // Cannot move any further
     }
     for (auto &b : coords)
         b.move_down();

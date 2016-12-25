@@ -150,23 +150,22 @@ void Game::controls () {
         switch(events.key.keysym.sym) {
             case SDLK_UP :
                 get_last_block().rotate_left(structList);
-                SDL_FlushEvent(SDL_KEYDOWN);
                 break;
             case SDLK_DOWN :
                 get_last_block().rotate_right(structList);
-                SDL_FlushEvent(SDL_KEYDOWN);
                 break;
             case SDLK_LEFT :
                 get_last_block().move_left(structList);
-                SDL_FlushEvent(SDL_KEYDOWN);
                 break;
             case SDLK_RIGHT :
                 get_last_block().move_right(structList);
-                SDL_FlushEvent(SDL_KEYDOWN);
                 break;
             case SDLK_SPACE :
-                setSpeed(100);
-                SDL_FlushEvent(SDL_KEYDOWN);
+                while(!get_last_block().move_down(structList))
+                    ;
+                break;
+            case SDLK_ESCAPE :
+                exit(0);
                 break;
         }
     }
@@ -227,14 +226,6 @@ void Game::gameOverChecker() {
     }
 }
 
-int Game::getSpeed() const {
-    return speed;
-}
-
-void Game::setSpeed(int speed) {
-    Game::speed = speed;
-}
-
 bool Game::collision_detector_y(int x, int y, std::vector<Structure> &structList) {
     for (auto i1 = structList.cbegin(); i1 != structList.end() - 1; ++i1)
         for (auto i2 = i1->coords.cbegin(); i2 != i1->coords.cend(); ++i2)
@@ -250,6 +241,7 @@ bool Game::collision_detector_x(int x, int y, std::vector<Structure> &structList
                 return true;
     return false;
 }
+
 
 
 
