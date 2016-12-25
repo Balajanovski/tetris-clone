@@ -6,6 +6,7 @@ This is just a small little thing I created for fun.<br>
 <br>The migration to SDL caused some issues such as:
 - The breaking of the destroy method
 - Unresponsive controls
+- Glitched black texture
 
 **Note:**<br>
 Uses SDL
