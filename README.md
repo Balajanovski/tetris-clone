@@ -4,8 +4,7 @@ This is just a small little thing I created for fun.<br>
 
 **Current bugs:**
 <br>The migration to SDL caused some issues such as:
-- Destroy method destroys rows one by one
-- Slightly unresponsive controls
+- Game runs too fast
 
 **Note:**<br>
 Uses SDL
