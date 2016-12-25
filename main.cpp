@@ -12,11 +12,11 @@ int main() {
             game.create_block();
         }
         game.controls();
-        napms(game.getSpeed());
+        SDL_Delay(game.getSpeed());
         if (game.getSpeed() < game.default_speed)
             game.setSpeed(game.default_speed);
         game.draw();
         game.gameOverChecker();
     }
-    endwin();
+    SDL_Quit();
 }

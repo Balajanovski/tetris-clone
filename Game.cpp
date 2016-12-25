@@ -2,9 +2,7 @@
 // Created by JULIA BALAJAN on 3/12/2016.
 //
 #include <random>
-#include <ncurses.h>
 #include "Game.h"
-#include <clocale>
 
 int Game::get_next_block() {
     static std::mt19937 generator(std::random_device{}());
@@ -58,7 +56,7 @@ inline void Game::create_block() {
     structList.push_back(Structure(get_next_block(), get_next_block()));
 }
 
-inline Structure& Game::get_last_block() {
+Structure& Game::get_last_block() {
     return *(structList.end() - 1);
 }
 
@@ -70,98 +68,119 @@ std::vector<Structure>& Game::getStructList() {
     return structList;
 }
 
+void Game::set_draw_color(const Structure &s) {
+    uint8_t color = s.getColor();
+    switch (color) {
+        case Structure::red :
+            SDL_SetRenderDrawColor(ren, 255, 0, 0, SDL_ALPHA_OPAQUE);
+            break;
+        case Structure::blue :
+            SDL_SetRenderDrawColor(ren, 0, 0, 255, SDL_ALPHA_OPAQUE);
+            break;
+        case Structure::green :
+            SDL_SetRenderDrawColor(ren, 0, 255, 0, SDL_ALPHA_OPAQUE);
+            break;
+        case Structure::yellow :
+            SDL_SetRenderDrawColor(ren, 255, 255, 0, SDL_ALPHA_OPAQUE);
+            break;
+    }
+}
+
 void Game::matrix_init() {
-    setlocale(LC_ALL, "");
-    initscr();
-    start_color();
 
-    init_pair(0, COLOR_GREEN, COLOR_BLACK);
-    init_pair(1, COLOR_RED, COLOR_BLACK);
-    init_pair(2, COLOR_BLUE, COLOR_BLACK);
-    init_pair(3, COLOR_YELLOW, COLOR_BLACK);
-    init_pair(4, COLOR_GREEN, COLOR_BLACK);
+    win = SDL_CreateWindow("Tetris", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, screen_width, screen_height, SDL_WINDOW_SHOWN);
+    ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_ACCELERATED);
 
-    curs_set(FALSE);
-    raw();
-    noecho();
-    nodelay(stdscr, TRUE);
+    SDL_Rect screen;
+    screen.x = 0;
+    screen.y = 0;
+    screen.w = screen_width;
+    screen.h = screen_height;
+    SDL_SetRenderDrawColor(ren, 255, 255, 255, SDL_ALPHA_OPAQUE);
+    SDL_RenderFillRect(ren, &screen);
+
+    SDL_Rect dest;
+    dest.w = tile_size;
+    dest.h = tile_size;
 
     int x,
         y;
 
     for (y = 0; y < height; y++) {
         for (x = 0; x < width; x++) {
-            bool foundBlockFlag = false;
 
             // Cycle through x and y, if x and y match with block, draw block
             for (auto iter1 = structList.cbegin(); iter1 != structList.cend(); ++iter1)
                 for (auto iter2 = iter1->coords.cbegin(); iter2 != iter1->coords.cend(); ++iter2)
                     if (x == iter2->get_x() && y == iter2->get_y()) {
-                        attron(COLOR_PAIR(iter1->getColor()));
-                        printw("█");
-                        attroff(COLOR_PAIR(iter1->getColor()));
-                        foundBlockFlag = true;
+                        set_draw_color(*iter1);
+                        dest.x = x * tile_size;
+                        dest.y = y * tile_size;
+                        SDL_RenderFillRect(ren, &dest);
+                        SDL_SetRenderDrawColor(ren, 0, 0, 0, SDL_ALPHA_OPAQUE);
+                        SDL_RenderDrawRect(ren, &dest);
                         break;
                     }
-
-            // If nothing matches, draw a space
-            if (!foundBlockFlag) {
-                move(y, x);
-                printw(" ");
-            }
         }
-        move(y, x);
-        printw("\n");
     }
+
+    SDL_RenderPresent(ren);
 }
 
 void Game::draw () {
-    for (int y = 0; y < height; y++) {
-        for (int x = 0; x < width; x++) {
-            bool foundBlockFlag = false;
+    SDL_SetRenderDrawColor(ren, 255, 255, 255, SDL_ALPHA_OPAQUE);
+    SDL_RenderClear(ren);
+    SDL_Rect dest;
+    dest.w = tile_size;
+    dest.h = tile_size;
 
-            // Cycle through x and y, if there is a block where there isn't a block drawn, draw one
+    int x,
+        y;
+
+    for (y = 0; y < height; y++) {
+        for (x = 0; x < width; x++) {
+
+            // Cycle through x and y, if x and y match with block, draw block
             for (auto iter1 = structList.cbegin(); iter1 != structList.cend(); ++iter1)
                 for (auto iter2 = iter1->coords.cbegin(); iter2 != iter1->coords.cend(); ++iter2)
-                    if (x == iter2->get_x() && y == iter2->get_y() && (mvinch(y, x) & A_CHARTEXT) != (blockChar)) {
-                        attron(COLOR_PAIR(iter1->getColor()));
-                        move(y, x);
-                        printw("█");
-                        attroff(COLOR_PAIR(iter1->getColor()));
-                        foundBlockFlag = true;
+                    if (x == iter2->get_x() && y == iter2->get_y()) {
+                        set_draw_color(*iter1);
+                        dest.x = x * tile_size;
+                        dest.y = y * tile_size;
+                        SDL_RenderFillRect(ren, &dest);
+                        SDL_SetRenderDrawColor(ren, 0, 0, 0, SDL_ALPHA_OPAQUE);
+                        SDL_RenderDrawRect(ren, &dest);
                         break;
                     }
-
-            // If nothing matches, draw a space
-            if (!foundBlockFlag) {
-                move(y, x);
-                printw(" ");
-            }
         }
     }
+
+    SDL_RenderPresent(ren);
 }
 
 void Game::controls () {
-    switch(getch()) {
-        case 'q' : case 'Q' :
-            get_last_block().rotate_left(structList);
-            break;
-        case 'e' : case 'E' :
-            get_last_block().rotate_right(structList);
-            break;
-        case 'a' : case 'A' :
-            get_last_block().move_left(structList);
-            break;
-        case 'd' : case 'D' :
-            get_last_block().move_right(structList);
-            break;
-        case 'x' : case 'X' :
-            gameOver = true;
-            break;
-        case 's' : case 'S' :
-            setSpeed(100);
-            break;
+    SDL_PollEvent(&events);
+    if (events.type == SDL_KEYDOWN) {
+        switch(events.key.keysym.sym) {
+            case SDLK_UP :
+                get_last_block().rotate_left(structList);
+                break;
+            case SDLK_DOWN :
+                get_last_block().rotate_right(structList);
+                break;
+            case SDLK_LEFT :
+                get_last_block().move_left(structList);
+                break;
+            case SDLK_RIGHT :
+                get_last_block().move_right(structList);
+                break;
+            case SDLK_SPACE :
+                setSpeed(100);
+                break;
+        }
     }
+    if(events.type == SDL_QUIT)
+        gameOver = true;
 }
 
 void Game::destroy() {
@@ -171,9 +190,9 @@ void Game::destroy() {
     for (int y = height-1; y >= 1; --y) {
         fall_flag = false;
         for (int x = 0; x < width; ++x) {
-            if ((mvinch(y, x) & A_CHARTEXT) == (blockChar & A_CHARTEXT)) {
-                ++counter;
-            }
+            //if ((mvinch(y, x) & A_CHARTEXT) == (blockChar & A_CHARTEXT)) {
+            //    ++counter;
+            //}
             if (counter >= width) {
                 delete_y = y;
                 for (auto iter1 = structList.begin(); iter1 != structList.end(); ++iter1)

@@ -6,16 +6,28 @@
 #define TETRIS_GAME_H
 
 #include "Structure.h"
-#include <ncurses.h>
 #include <vector>
+#include <SDL2/SDL.h>
 
 class Game {
-friend class Block;
+friend class Controller;
 private:
     int prev_block = 99; /* Previous block, represented by the key */
     bool gameOver = false;
     int speed = 250;
     std::vector<Structure> structList; /* Contains all the structures that have fallen, and are currently falling */
+
+    // Graphics
+    constexpr static int screen_width = 400;
+    constexpr static int screen_height = 960;
+    constexpr static int tile_size = 40;
+
+    // Event Queue
+    SDL_Event events;
+
+    void set_draw_color(const Structure &s);
+    SDL_Window *win = nullptr;
+    SDL_Renderer *ren = nullptr;
 public:
     /*
      * Block structures key:
@@ -26,10 +38,10 @@ public:
      * 4 : T shaped
      */
     const int default_speed = 300;
+
+    // In terms of blocks
     constexpr static int height = 24;
     constexpr static int width = 10;
-
-    constexpr static chtype blockChar = L'\u2588'; /* Constant which represents the value of the block character */
 
     static const cCoord struct_coords[][cCoord::max_coordinates + 1];
     static const cCoord struct_origins[cCoord::max_coordinates + 1];
