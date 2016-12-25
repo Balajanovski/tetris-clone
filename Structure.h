@@ -13,9 +13,8 @@ class Structure {
     private:
         int struct_type; // The type of block, according to the key
         cCoord origin;
-        uint8_t color;
     public:
-        Structure(int type, int c);
+        Structure(int type);
         Structure(const Structure&);
 
         // Constants used by rotate_point() (in radians)
@@ -37,16 +36,13 @@ class Structure {
         Structure move_left(std::vector<Structure> &structList);
         Structure move_right(std::vector<Structure> &structList);
 
-        // Color constants
-        constexpr static int red = 0;
-        constexpr static int blue = 1;
-        constexpr static int green = 2;
-        constexpr static int yellow = 3;
-
         std::vector<Block> coords;
 
-        // Getters
-        int getColor() const;
+        // RGB
+        const uint8_t red;
+        const uint8_t green;
+        const uint8_t blue;
+
 };
 
 

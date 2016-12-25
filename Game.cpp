@@ -3,16 +3,25 @@
 //
 #include <random>
 #include <iostream>
+#include <algorithm>
 #include "Game.h"
 
-int Game::get_next_block() {
+uint8_t Game::get_next_block() {
     static std::mt19937 generator(std::random_device{}());
     std::uniform_int_distribution<int> distribution(0,cCoord::max_coordinates);
     int val;
     for (val = distribution(generator); val == prev_block; val = distribution(generator))
-    { }
+        ;
     return val;
 }
+
+uint8_t Game::get_color_value() {
+    static std::mt19937 generator(std::random_device{}());
+    std::uniform_int_distribution<int> distribution(0, 255);\
+    return distribution(generator);
+}
+
+
 
 // Stores template for all the different tetris pieces
 const cCoord Game::struct_coords[][cCoord::max_coordinates + 1] = {{
@@ -54,7 +63,7 @@ Game::Game() {
 
 
 inline void Game::create_block() {
-    structList.push_back(Structure(get_next_block(), get_next_block()));
+    structList.push_back(Structure(get_next_block()));
 }
 
 Structure& Game::get_last_block() {
@@ -70,21 +79,7 @@ std::vector<Structure>& Game::getStructList() {
 }
 
 void Game::set_draw_color(const Structure &s) {
-    uint8_t color = s.getColor();
-    switch (color) {
-        case Structure::red :
-            SDL_SetRenderDrawColor(ren, 255, 0, 0, SDL_ALPHA_OPAQUE);
-            break;
-        case Structure::blue :
-            SDL_SetRenderDrawColor(ren, 0, 0, 255, SDL_ALPHA_OPAQUE);
-            break;
-        case Structure::green :
-            SDL_SetRenderDrawColor(ren, 0, 255, 0, SDL_ALPHA_OPAQUE);
-            break;
-        case Structure::yellow :
-            SDL_SetRenderDrawColor(ren, 255, 255, 0, SDL_ALPHA_OPAQUE);
-            break;
-    }
+    SDL_SetRenderDrawColor(ren, s.red, s.green, s.blue, SDL_ALPHA_OPAQUE);
 }
 
 void Game::init() {
@@ -155,18 +150,23 @@ void Game::controls () {
         switch(events.key.keysym.sym) {
             case SDLK_UP :
                 get_last_block().rotate_left(structList);
+                SDL_FlushEvent(SDL_KEYDOWN);
                 break;
             case SDLK_DOWN :
                 get_last_block().rotate_right(structList);
+                SDL_FlushEvent(SDL_KEYDOWN);
                 break;
             case SDLK_LEFT :
                 get_last_block().move_left(structList);
+                SDL_FlushEvent(SDL_KEYDOWN);
                 break;
             case SDLK_RIGHT :
                 get_last_block().move_right(structList);
+                SDL_FlushEvent(SDL_KEYDOWN);
                 break;
             case SDLK_SPACE :
                 setSpeed(100);
+                SDL_FlushEvent(SDL_KEYDOWN);
                 break;
         }
     }
@@ -175,16 +175,22 @@ void Game::controls () {
 }
 
 void Game::destroy() {
-    int counter = 0;
     int delete_y;
-    bool fall_flag;
+    bool fall_flag = false,
+         destroy_flag = false;
     for (int y = height-1; y >= 1; --y) {
         fall_flag = false;
         for (int x = 0; x < width; ++x) {
-            //if ((mvinch(y, x) & A_CHARTEXT) == (blockChar & A_CHARTEXT)) {
-            //    ++counter;
-            //}
-            if (counter >= width) {
+            int counter[height];
+            std::fill(std::begin(counter), std::end(counter), 0);
+            for (auto iter1 = structList.begin(); iter1 != structList.end(); ++iter1)
+                for (auto iter2 = iter1->coords.begin(); iter2 != iter1->coords.end();) {
+                    ++counter[iter2->get_y()];
+                    if (counter[iter2->get_y()] == width)
+                        destroy_flag = true;
+                    ++iter2;
+                }
+            if (destroy_flag) {
                 delete_y = y;
                 for (auto iter1 = structList.begin(); iter1 != structList.end(); ++iter1)
                     for (auto iter2 = iter1->coords.begin(); iter2 != iter1->coords.end();) {
@@ -205,8 +211,6 @@ void Game::destroy() {
                             iter2->move_down();
                     }
             }
-
-        counter = 0;
     }
 }
 

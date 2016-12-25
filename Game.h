@@ -22,8 +22,7 @@ private:
     constexpr static int screen_height = 960;
     constexpr static int tile_size = 40;
 
-    // Event Queue
-    SDL_Event events;
+    SDL_Event events; // Event queue
 
     SDL_Window *win = nullptr;
     SDL_Renderer *ren = nullptr;
@@ -58,7 +57,6 @@ public:
     static bool collision_detector_x(int x, int y, std::vector<Structure> &structList);
 
     // Getters
-    int get_next_block();
     bool isGameOver() const;
     int getSpeed() const;
     std::vector<Structure> &getStructList();
@@ -71,6 +69,10 @@ public:
     void draw();
     void controls();
     void gameOverChecker();
+
+    // Random number generators
+    uint8_t get_next_block();
+    static uint8_t get_color_value(); // Generates a number from 0 - 255 which will be used when generating block colors
 };
 
 

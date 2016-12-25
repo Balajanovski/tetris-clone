@@ -2,7 +2,7 @@
 
 int main() {
     Game game;
-    game.matrix_init();
+    game.init();
 
     while (!game.isGameOver()) {
         bool can_create_block = false;
@@ -18,5 +18,5 @@ int main() {
         game.draw();
         game.gameOverChecker();
     }
-    SDL_Quit();
+
 }

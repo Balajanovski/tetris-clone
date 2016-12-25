@@ -22,15 +22,17 @@ inline void rotate_point(cCoord &origin, int direction, Block &p) {
     p.set_y(y1);
 }
 
-Structure::Structure(int type, int c) : struct_type(type), origin(Game::struct_origins[type]), color(c) {
+Structure::Structure(int type) : struct_type(type), origin(cCoord(Game::struct_origins[type].x + Game::width / 2 - 2, Game::struct_origins[type].y)), red(Game::get_color_value()),
+                                 green(Game::get_color_value()), blue(Game::get_color_value())
+{
     coords.resize(4);
     for (int i = 0; i < cCoord::max_coordinates; ++i) {
-        coords.at(i).set_x(Game::struct_coords[type][i].x);
+        coords.at(i).set_x(Game::struct_coords[type][i].x + Game::width / 2 - 2);
         coords.at(i).set_y(Game::struct_coords[type][i].y);
     }
 }
 
-Structure::Structure(const Structure &s) : struct_type(s.struct_type), origin(s.origin), color(s.color), coords(s.coords) {}
+Structure::Structure(const Structure &s) : struct_type(s.struct_type), origin(s.origin), coords(s.coords), red(s.red), green(s.green), blue(s.blue) {}
 
 Structure Structure::rotate_left(std::vector<Structure> &structList) {
     std::vector<Block> temp(coords);    // Create a temporary array to make
@@ -106,9 +108,4 @@ Structure Structure::move_right(std::vector<Structure> &structList) {
         coords[i] = temp[i];
     origin.x += 1;
     return *this;
-}
-
-
-int Structure::getColor() const {
-    return color;
 }
