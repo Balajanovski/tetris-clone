@@ -67,7 +67,7 @@ public:
     void setSpeed(int speed);
 
     // General game methods
-    void matrix_init();
+    void init();
     void draw();
     void controls();
     void gameOverChecker();

@@ -2,6 +2,7 @@
 // Created by JULIA BALAJAN on 3/12/2016.
 //
 #include <random>
+#include <iostream>
 #include "Game.h"
 
 int Game::get_next_block() {
@@ -86,10 +87,21 @@ void Game::set_draw_color(const Structure &s) {
     }
 }
 
-void Game::matrix_init() {
+void Game::init() {
 
     win = SDL_CreateWindow("Tetris", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, screen_width, screen_height, SDL_WINDOW_SHOWN);
+    if (win == nullptr) {
+        std::cout << "Window error: " << SDL_GetError() << std::endl;
+        cleanup();
+        exit(1);
+    }
+
     ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_ACCELERATED);
+    if (ren == nullptr) {
+        std::cout << "Renderer error: " << SDL_GetError() << std::endl;
+        cleanup();
+        exit(1);
+    }
 
     SDL_Rect screen;
     screen.x = 0;
@@ -98,33 +110,6 @@ void Game::matrix_init() {
     screen.h = screen_height;
     SDL_SetRenderDrawColor(ren, 255, 255, 255, SDL_ALPHA_OPAQUE);
     SDL_RenderFillRect(ren, &screen);
-
-    SDL_Rect dest;
-    dest.w = tile_size;
-    dest.h = tile_size;
-
-    int x,
-        y;
-
-    for (y = 0; y < height; y++) {
-        for (x = 0; x < width; x++) {
-
-            // Cycle through x and y, if x and y match with block, draw block
-            for (auto iter1 = structList.cbegin(); iter1 != structList.cend(); ++iter1)
-                for (auto iter2 = iter1->coords.cbegin(); iter2 != iter1->coords.cend(); ++iter2)
-                    if (x == iter2->get_x() && y == iter2->get_y()) {
-                        set_draw_color(*iter1);
-                        dest.x = x * tile_size;
-                        dest.y = y * tile_size;
-                        SDL_RenderFillRect(ren, &dest);
-                        SDL_SetRenderDrawColor(ren, 0, 0, 0, SDL_ALPHA_OPAQUE);
-                        SDL_RenderDrawRect(ren, &dest);
-                        break;
-                    }
-        }
-    }
-
-    SDL_RenderPresent(ren);
 }
 
 void Game::draw () {
