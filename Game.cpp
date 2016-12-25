@@ -158,6 +158,12 @@ void Game::draw () {
     SDL_RenderPresent(ren);
 }
 
+void Game::cleanup() {
+    SDL_DestroyRenderer(ren);
+    SDL_DestroyWindow(win);
+    SDL_Quit();
+}
+
 void Game::controls () {
     SDL_PollEvent(&events);
     if (events.type == SDL_KEYDOWN) {
@@ -226,6 +232,7 @@ void Game::gameOverChecker() {
     for (auto iter1 = block.coords.cbegin(); iter1 != block.coords.cend(); ++iter1) {
         if (iter1->get_y() <= 1) {
             gameOver = true;
+            cleanup();
             return;
         }
     }
