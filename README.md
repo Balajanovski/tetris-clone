@@ -4,10 +4,8 @@ This is just a small little thing I created for fun.<br>
 
 **Current bugs:**
 <br>The migration to SDL caused some issues such as:
-- The breaking of the destroy method
-  <br>  Possible solution, create a matrix
-- Unresponsive controls
-- Glitched black texture
+- Destroy method destroys rows one by one
+- Slightly unresponsive controls
 
 **Note:**<br>
 Uses SDL
