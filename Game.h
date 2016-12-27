@@ -8,6 +8,7 @@
 #include "Structure.h"
 #include <vector>
 #include <SDL2/SDL.h>
+#include <SDL_ttf.h>
 
 class Game {
 friend class Controller;
@@ -15,12 +16,15 @@ private:
     int prev_block = 99; /* Previous block, represented by the key */
     bool gameOver = false;
     std::vector<Structure> structList; /* Contains all the structures that have fallen, and are currently falling */
+    int score = 0;
 
     // SDL methods and variables
     SDL_Event events; // Event queue
 
     SDL_Window *win = nullptr;
     SDL_Renderer *ren = nullptr;
+
+    TTF_Font *font = nullptr;
 
     void set_draw_color(const Structure &s);
     void cleanup();
@@ -59,12 +63,16 @@ public:
     // General game methods
     void init();
     void draw();
-    void controls();
+    void controls(unsigned int &last_time);
     void gameOverChecker();
 
     // Random number generators
     uint8_t get_next_block();
     static uint8_t get_color_value(); // Generates a number from 0 - 255 which will be used when generating block colors
+
+    // Regulate speed
+    static constexpr int wait_time_down     = 500; // Wait time for the block to fall
+    static constexpr int wait_time_controls = 125; // Wait time for the controls
 private:
     // SDL Constants put in their own private little corner because they hate co-operation, kinda like co-workers
     constexpr static int tile_size = 40;

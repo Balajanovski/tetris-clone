@@ -2,6 +2,10 @@
 #include <iostream>
 
 int main() {
+    unsigned int last_time_down = SDL_GetTicks();
+    unsigned int last_time_controls = SDL_GetTicks();
+    int frames = 0;
+
     constexpr int8_t max_fps = 60;
 
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
@@ -14,7 +18,15 @@ int main() {
     while (!game.isGameOver()) {
 
         bool can_create_block = false;
-        can_create_block = game.get_last_block().move_down(game.getStructList());
+
+        game.controls(last_time_controls);
+
+        unsigned long current_time = SDL_GetTicks();
+        if ((current_time - last_time_down) > Game::wait_time_down) {
+            can_create_block = game.get_last_block().move_down(game.getStructList());
+            last_time_down = SDL_GetTicks();
+        }
+
         if (can_create_block) {
             game.destroy();
             game.create_block();
@@ -25,7 +37,6 @@ int main() {
 
         if(delay > 0)
             SDL_Delay(delay);
-        game.controls();
         game.draw();
         game.gameOverChecker();
 

@@ -84,17 +84,21 @@ void Game::set_draw_color(const Structure &s) {
 
 void Game::init() {
 
+    if (TTF_Init() == -1) {
+        std::cout << "Unable to initialise SDL_ttf: " << SDL_GetError() << std::endl;
+        exit(1);
+    }
+
     win = SDL_CreateWindow("Tetris", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, screen_width, screen_height, SDL_WINDOW_SHOWN);
     if (win == nullptr) {
         std::cout << "Window error: " << SDL_GetError() << std::endl;
-        cleanup();
         exit(1);
     }
 
     ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_ACCELERATED);
     if (ren == nullptr) {
         std::cout << "Renderer error: " << SDL_GetError() << std::endl;
-        cleanup();
+        SDL_DestroyWindow(win);
         exit(1);
     }
 
@@ -105,6 +109,16 @@ void Game::init() {
     screen.h = screen_height;
     SDL_SetRenderDrawColor(ren, 255, 255, 255, SDL_ALPHA_OPAQUE);
     SDL_RenderFillRect(ren, &screen);
+
+
+    constexpr int font_size = 48;
+    font = TTF_OpenFont("pixelated.ttf", font_size);
+    if (font == nullptr) {
+        std::cout << "Font Initialisation Error: " << SDL_GetError() << std::endl;
+        cleanup();
+        exit(1);
+    }
+
 }
 
 void Game::draw () {
@@ -135,6 +149,37 @@ void Game::draw () {
         }
     }
 
+    const SDL_Color color = {0, 0, 0};
+    SDL_Surface *font_surf = TTF_RenderText_Blended(font, (std::string("Score: ") + std::to_string(score)).c_str(), color);
+    if (font_surf == nullptr) {
+        std::cout << "Font Rendering Error: " << SDL_GetError() << std::endl;
+        TTF_CloseFont(font);
+        cleanup();
+        exit(1);
+    }
+
+    SDL_Texture *font_texture = SDL_CreateTextureFromSurface(ren, font_surf);
+    if (font_texture == nullptr) {
+        std::cout << "Create Font Texture Error: " << SDL_GetError() << std::endl;
+        TTF_CloseFont(font);
+        SDL_FreeSurface(font_surf);
+        cleanup();
+        exit(1);
+    }
+
+    SDL_FreeSurface(font_surf);
+
+    constexpr int padding = 17;
+    int w,
+        h;
+    SDL_QueryTexture(font_texture, nullptr, nullptr, &w, &h);
+    dest.w = w;
+    dest.h = h;
+    dest.x = screen_width - w - padding;
+    dest.y = 0 + padding;
+
+    SDL_RenderCopy(ren, font_texture, nullptr, &dest);
+
     SDL_RenderPresent(ren);
 }
 
@@ -144,33 +189,37 @@ void Game::cleanup() {
     SDL_Quit();
 }
 
-void Game::controls () {
-    SDL_PollEvent(&events);
-    if (events.type == SDL_KEYDOWN) {
-        switch(events.key.keysym.sym) {
-            case SDLK_UP :
-                get_last_block().rotate_left(structList);
-                break;
-            case SDLK_DOWN :
-                get_last_block().rotate_right(structList);
-                break;
-            case SDLK_LEFT :
-                get_last_block().move_left(structList);
-                break;
-            case SDLK_RIGHT :
-                get_last_block().move_right(structList);
-                break;
-            case SDLK_SPACE :
-                while(!get_last_block().move_down(structList))
-                    ;
-                break;
-            case SDLK_ESCAPE :
-                exit(0);
-                break;
+void Game::controls (unsigned int &last_time) {
+    unsigned long current_time = SDL_GetTicks();
+    if ((current_time - last_time) > Game::wait_time_controls) {
+        SDL_PollEvent(&events);
+        if (events.type == SDL_KEYDOWN) {
+            switch(events.key.keysym.sym) {
+                case SDLK_UP :
+                    get_last_block().rotate_left(structList);
+                    break;
+                case SDLK_DOWN :
+                    get_last_block().rotate_right(structList);
+                    break;
+                case SDLK_LEFT :
+                    get_last_block().move_left(structList);
+                    break;
+                case SDLK_RIGHT :
+                    get_last_block().move_right(structList);
+                    break;
+                case SDLK_SPACE :
+                    while(!get_last_block().move_down(structList))
+                        ;
+                    break;
+                case SDLK_ESCAPE :
+                    exit(0);
+                    break;
+            }
         }
+        if(events.type == SDL_QUIT)
+            gameOver = true;
+        last_time = SDL_GetTicks();
     }
-    if(events.type == SDL_QUIT)
-        gameOver = true;
 }
 
 void Game::destroy() {
@@ -195,6 +244,7 @@ void Game::destroy() {
                     for (auto iter2 = iter1->coords.begin(); iter2 != iter1->coords.end();) {
                         if (iter2->get_y() == delete_y) {
                             iter2 = iter1->coords.erase(iter2);
+                            score += 10;
                             fall_flag = true;
                             continue;
                         }
