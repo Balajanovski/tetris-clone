@@ -259,6 +259,10 @@ void Game::destroy() {
             }
     } while (row_destroyed_flag); // Re-iterate if a row was destroyed
 
+    if (rows_been_destroyed <= 4)
+        score += (100 * rows_been_destroyed);
+    else if (rows_been_destroyed > 4)
+        score += (200 * rows_been_destroyed);
 
     // If blocks have been destroyed, make the blocks above fall
     if (fall_flag) {
