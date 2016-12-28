@@ -18,6 +18,7 @@ public:
     ~Block() = default;
 
     void move_down();
+    void move_down(int y);
     void move_right();
     void move_left();
 

@@ -84,17 +84,20 @@ void Game::set_draw_color(const Structure &s) {
 
 void Game::init() {
 
+    // Initialise SDL_ttf
     if (TTF_Init() == -1) {
         std::cout << "Unable to initialise SDL_ttf: " << SDL_GetError() << std::endl;
         exit(1);
     }
 
+    // Create window
     win = SDL_CreateWindow("Tetris", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, screen_width, screen_height, SDL_WINDOW_SHOWN);
     if (win == nullptr) {
         std::cout << "Window error: " << SDL_GetError() << std::endl;
         exit(1);
     }
 
+    // Create renderer
     ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_ACCELERATED);
     if (ren == nullptr) {
         std::cout << "Renderer error: " << SDL_GetError() << std::endl;
@@ -102,6 +105,7 @@ void Game::init() {
         exit(1);
     }
 
+    // Create white background
     SDL_Rect screen;
     screen.x = 0;
     screen.y = 0;
@@ -110,7 +114,7 @@ void Game::init() {
     SDL_SetRenderDrawColor(ren, 255, 255, 255, SDL_ALPHA_OPAQUE);
     SDL_RenderFillRect(ren, &screen);
 
-
+    // Initialise font
     constexpr int font_size = 48;
     font = TTF_OpenFont("pixelated.ttf", font_size);
     if (font == nullptr) {
@@ -223,43 +227,46 @@ void Game::controls (unsigned int &last_time) {
 }
 
 void Game::destroy() {
-    int delete_y;
-    bool fall_flag = false,
-         destroy_flag = false;
-    for (int y = height-1; y >= 1; --y) {
-        fall_flag = false;
-        for (int x = 0; x < width; ++x) {
-            int counter[height];
-            std::fill(std::begin(counter), std::end(counter), 0);
-            for (auto iter1 = structList.begin(); iter1 != structList.end(); ++iter1)
-                for (auto iter2 = iter1->coords.begin(); iter2 != iter1->coords.end();) {
-                    ++counter[iter2->get_y()];
-                    if (counter[iter2->get_y()] == width)
-                        destroy_flag = true;
-                    ++iter2;
-                }
-            if (destroy_flag) {
-                delete_y = y;
-                for (auto iter1 = structList.begin(); iter1 != structList.end(); ++iter1)
-                    for (auto iter2 = iter1->coords.begin(); iter2 != iter1->coords.end();) {
-                        if (iter2->get_y() == delete_y) {
-                            iter2 = iter1->coords.erase(iter2);
-                            score += 10;
-                            fall_flag = true;
-                            continue;
+    bool fall_flag          = false;     // Flag to indicate whether the blocks should fall
+    bool row_destroyed_flag = false;     // Flag indicating whether a row has been destroyed
+
+    int row_to_destroy;         // Y value indicating the row to be destroyed
+    int row_counter[height];    // Counter, to know which row to destroy
+    int rows_been_destroyed = 0; // Count of how many rows have been destroyed to be used when calculating fall distance
+
+    do {
+        row_destroyed_flag = false;
+        // Set the counter to 0
+        std::fill(std::begin(row_counter), std::end(row_counter), 0);
+
+        // Iterate through all the blocks, check if there are any complete rows, if so, destroy them
+        for (auto &s : structList)
+            for (auto &b : s.coords) {
+                // If there is a complete row
+                if (++row_counter[row_to_destroy = b.get_y()] >= width) {
+                    // Destroy the blocks in the row
+                    ++rows_been_destroyed;
+                    for (auto &s : structList)
+                        for (auto block_iter = s.coords.begin(); block_iter != s.coords.end();) {
+                            if (block_iter->get_y() == row_to_destroy) {
+                                block_iter = s.coords.erase(block_iter);
+                                fall_flag = row_destroyed_flag = true;
+                                continue;
+                            }
+                            ++block_iter;
                         }
-                        ++iter2;
-                    }
+                }
             }
-        }
-        if (fall_flag)
-            for (int y = delete_y - 1; y >= 0; --y) {
-                for (auto iter1 = structList.begin(); iter1 != structList.end(); ++iter1)
-                    for (auto iter2 = iter1->coords.begin(); iter2 != iter1->coords.end(); ++iter2) {
-                        if (iter2->get_y() == y)
-                            iter2->move_down();
-                    }
-            }
+    } while (row_destroyed_flag); // Re-iterate if a row was destroyed
+
+
+    // If blocks have been destroyed, make the blocks above fall
+    if (fall_flag) {
+        // Iterate through the blocks, making the blocks above the destroyed row fall
+        for (auto &s : structList)
+            for (auto &b : s.coords)
+                if (b.get_y() <= row_to_destroy)
+                    b.move_down(rows_been_destroyed); // Fall by how many rows have been destroyed
     }
 }
 

@@ -13,6 +13,10 @@ void Block::move_down() {
     coord.y += 1;
 }
 
+void Block::move_down(int y) {
+    coord.y += y;
+}
+
 void Block::move_right() {
     coord.x += 1;
 }
