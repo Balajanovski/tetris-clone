@@ -37,6 +37,8 @@ public:
      * 2 : Stick shaped
      * 3 : Stair shaped
      * 4 : T shaped
+     * 5 : Reverse L shaped
+     * 6 : Reversed Stair shaped
      */
     const int default_speed = 300;
 
@@ -44,8 +46,8 @@ public:
     constexpr static int height = 25;
     constexpr static int width = 10;
 
-    static const cCoord struct_coords[][cCoord::max_coordinates + 1];
-    static const cCoord struct_origins[cCoord::max_coordinates + 1];
+    static const cCoord struct_coords[][cCoord::max_coordinates];
+    static const cCoord struct_origins[];
 
     Game(); /* Constructor */
 

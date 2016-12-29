@@ -8,10 +8,11 @@
 
 uint8_t Game::get_next_block() {
     static std::mt19937 generator(std::random_device{}());
-    std::uniform_int_distribution<int> distribution(0,cCoord::max_coordinates);
+    std::uniform_int_distribution<int> distribution(0,6);
     int val;
     for (val = distribution(generator); val == prev_block; val = distribution(generator))
         ;
+    std::cerr << val << '\n';
     return val;
 }
 
@@ -24,7 +25,7 @@ uint8_t Game::get_color_value() {
 
 
 // Stores template for all the different tetris pieces
-const cCoord Game::struct_coords[][cCoord::max_coordinates + 1] = {{
+const cCoord Game::struct_coords[][cCoord::max_coordinates] = {{
                                                   /* Row: 1 */ {0, 0}, {1, 0}, {2, 0},
                                                   /* Row: 2 */ {0, 1},
                                           },
@@ -45,15 +46,25 @@ const cCoord Game::struct_coords[][cCoord::max_coordinates + 1] = {{
                                           {
                                                   /* Row: 1 */         {1, 0},
                                                   /* Row: 2 */ {0, 1}, {1, 1}, {2, 1},
+                                          },
+                                          {
+                                                  /* Row: 1 */ {0, 0}, {1, 0}, {2, 0},
+                                                  /* Row: 2 */                 {2, 1},
+                                          },
+                                          {
+                                                  /* Row: 1 */ {0, 0}, {1, 0},
+                                                  /* Row: 2 */         {1, 1}, {2, 1},
                                           }};
 
 // Stores the origins coords for all the different tetris pieces
-const cCoord Game::struct_origins[cCoord::max_coordinates + 1] = {
-        /* L Shaped */      {0, 0},
-        /* Square shaped */ {0, 0},
-        /* Stick shaped */  {0, 0},
-        /* Stair shaped */  {1, 0},
-        /* T shaped */      {1, 1},
+const cCoord Game::struct_origins[] = {
+        /* L Shaped */              {0, 0},
+        /* Square shaped */         {0, 0},
+        /* Stick shaped */          {0, 0},
+        /* Stair shaped */          {1, 0},
+        /* T shaped */              {1, 1},
+        /* Reverse L shaped */      {2, 0},
+        /* Reverse Stair shaped */  {1, 0},
 };
 
 Game::Game() {
