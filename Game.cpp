@@ -12,7 +12,6 @@ uint8_t Game::get_next_block() {
     int val;
     for (val = distribution(generator); val == prev_block; val = distribution(generator))
         ;
-    std::cerr << val << '\n';
     return val;
 }
 
