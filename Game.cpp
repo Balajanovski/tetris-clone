@@ -231,24 +231,27 @@ void Game::destroy() {
     bool row_destroyed_flag = false;     // Flag indicating whether a row has been destroyed
 
     int row_to_destroy;         // Y value indicating the row to be destroyed
-    int row_counter[height];    // Counter, to know which row to destroy
+    std::vector<int> row_counter(height);    // Counter, to know which row to destroy
     int rows_been_destroyed = 0; // Count of how many rows have been destroyed to be used when calculating fall distance
 
     do {
         row_destroyed_flag = false;
         // Set the counter to 0
-        std::fill(std::begin(row_counter), std::end(row_counter), 0);
 
         // Iterate through all the blocks, check if there are any complete rows, if so, destroy them
         for (auto &s : structList)
             for (auto &b : s.coords) {
                 // If there is a complete row
-                if (++row_counter[row_to_destroy = b.get_y()] >= width) {
+                if (++(row_counter[b.get_y()]) >= width) {
+                    row_to_destroy = b.get_y();
+                    std::cerr << "Counter: " << row_counter[row_to_destroy] << '\n';
+                    std::fill(row_counter.begin(), row_counter.end(), 0);
                     // Destroy the blocks in the row
                     ++rows_been_destroyed;
                     for (auto &s : structList)
                         for (auto block_iter = s.coords.begin(); block_iter != s.coords.end();) {
                             if (block_iter->get_y() == row_to_destroy) {
+                                std::cerr << row_to_destroy << '\n';
                                 block_iter = s.coords.erase(block_iter);
                                 fall_flag = row_destroyed_flag = true;
                                 continue;
@@ -269,8 +272,9 @@ void Game::destroy() {
         // Iterate through the blocks, making the blocks above the destroyed row fall
         for (auto &s : structList)
             for (auto &b : s.coords)
-                if (b.get_y() <= row_to_destroy)
+                if (b.get_y() < row_to_destroy) {
                     b.move_down(rows_been_destroyed); // Fall by how many rows have been destroyed
+                }
     }
 }
 
