@@ -244,14 +244,12 @@ void Game::destroy() {
                 // If there is a complete row
                 if (++(row_counter[b.get_y()]) >= width) {
                     row_to_destroy = b.get_y();
-                    std::cerr << "Counter: " << row_counter[row_to_destroy] << '\n';
                     std::fill(row_counter.begin(), row_counter.end(), 0);
                     // Destroy the blocks in the row
                     ++rows_been_destroyed;
                     for (auto &s : structList)
                         for (auto block_iter = s.coords.begin(); block_iter != s.coords.end();) {
                             if (block_iter->get_y() == row_to_destroy) {
-                                std::cerr << row_to_destroy << '\n';
                                 block_iter = s.coords.erase(block_iter);
                                 fall_flag = row_destroyed_flag = true;
                                 continue;
