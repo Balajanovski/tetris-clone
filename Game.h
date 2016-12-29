@@ -9,6 +9,7 @@
 #include <vector>
 #include <SDL2/SDL.h>
 #include <SDL_ttf.h>
+#include <SDL_mixer.h>
 
 class Game {
 friend class Controller;
@@ -25,6 +26,7 @@ private:
     SDL_Renderer *ren = nullptr;
 
     TTF_Font *font = nullptr;
+    Mix_Music *music = nullptr;
 
     void set_draw_color(const Structure &s);
     void cleanup();

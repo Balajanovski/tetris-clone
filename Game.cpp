@@ -93,10 +93,21 @@ void Game::set_draw_color(const Structure &s) {
 }
 
 void Game::init() {
+    // Initialise SDL
+    if (SDL_Init(SDL_INIT_EVERYTHING) == -1) {
+        std::cout << "Unable to initialise SDL: " << SDL_GetError() << std::endl;
+        exit(1);
+    }
 
     // Initialise SDL_ttf
     if (TTF_Init() == -1) {
         std::cout << "Unable to initialise SDL_ttf: " << SDL_GetError() << std::endl;
+        exit(1);
+    }
+
+    // Initalise SDL_Mixer
+    if( Mix_OpenAudio( 22050, MIX_DEFAULT_FORMAT, 2, 4096 ) == -1 ) {
+        std::cout << "Unable to initialise SDL_mixer: " << SDL_GetError() << std::endl;
         exit(1);
     }
 
@@ -133,9 +144,20 @@ void Game::init() {
         exit(1);
     }
 
+    // Load music
+    music = Mix_LoadMUS("Tetris_Theme_B.wav");
+    if (music == nullptr) {
+        std::cout << "Music Initialisation Error: " << SDL_GetError() << std::endl;
+        cleanup();
+        exit(1);
+    }
+
+    Mix_PlayMusic(music, -1);
+
 }
 
 void Game::draw () {
+
     SDL_SetRenderDrawColor(ren, 255, 255, 255, SDL_ALPHA_OPAQUE);
     SDL_RenderClear(ren);
     SDL_Rect dest;
@@ -152,10 +174,17 @@ void Game::draw () {
             for (auto iter1 = structList.cbegin(); iter1 != structList.cend(); ++iter1)
                 for (auto iter2 = iter1->coords.cbegin(); iter2 != iter1->coords.cend(); ++iter2)
                     if (x == iter2->get_x() && y == iter2->get_y()) {
+                        // Set the draw color
                         set_draw_color(*iter1);
+
+                        // Position the rectangle to draw
                         dest.x = x * tile_size;
                         dest.y = y * tile_size;
+
+                        // Fill the rectangle
                         SDL_RenderFillRect(ren, &dest);
+
+                        // Set color to black, then draw a border around the block
                         SDL_SetRenderDrawColor(ren, 0, 0, 0, SDL_ALPHA_OPAQUE);
                         SDL_RenderDrawRect(ren, &dest);
                         break;
@@ -163,7 +192,10 @@ void Game::draw () {
         }
     }
 
+    // Color for drawing the score
     const SDL_Color color = {0, 0, 0};
+
+    // Create font surface
     SDL_Surface *font_surf = TTF_RenderText_Blended(font, (std::string("Score: ") + std::to_string(score)).c_str(), color);
     if (font_surf == nullptr) {
         std::cout << "Font Rendering Error: " << SDL_GetError() << std::endl;
@@ -172,6 +204,7 @@ void Game::draw () {
         exit(1);
     }
 
+    // Create texture from font surface
     SDL_Texture *font_texture = SDL_CreateTextureFromSurface(ren, font_surf);
     if (font_texture == nullptr) {
         std::cout << "Create Font Texture Error: " << SDL_GetError() << std::endl;
@@ -181,23 +214,33 @@ void Game::draw () {
         exit(1);
     }
 
+    // Destroy the surface since we don't need it anymore
     SDL_FreeSurface(font_surf);
 
-    constexpr int padding = 17;
+
+    constexpr int margin = 17;
     int w,
         h;
+
+    // Query font texture for width and height
     SDL_QueryTexture(font_texture, nullptr, nullptr, &w, &h);
+
+    // Create rectangle to draw to
     dest.w = w;
     dest.h = h;
-    dest.x = screen_width - w - padding;
-    dest.y = 0 + padding;
+    dest.x = screen_width - w - margin;
+    dest.y = 0 + margin;
 
+    // Draw the score
     SDL_RenderCopy(ren, font_texture, nullptr, &dest);
 
+    // Present all changes
     SDL_RenderPresent(ren);
 }
 
 void Game::cleanup() {
+    TTF_CloseFont(font);
+    TTF_Quit();
     SDL_DestroyRenderer(ren);
     SDL_DestroyWindow(win);
     SDL_Quit();
@@ -293,6 +336,9 @@ void Game::gameOverChecker() {
     for (auto iter1 = block.coords.cbegin(); iter1 != block.coords.cend(); ++iter1) {
         if (iter1->get_y() <= 1) {
             gameOver = true;
+            Mix_HaltMusic();
+            Mix_FreeMusic(music);
+            Mix_CloseAudio();
             cleanup();
             return;
         }
