@@ -299,6 +299,7 @@ void Game::destroy() {
                     ++counter;
                 if (counter >= width) {
                     ++rows_been_destroyed;
+                    row_destroyed_flag = true;
                     for (int i = 0; i < width; ++i)
                         matrix[i][y] = nullptr;
                     for (auto &s : structList)
