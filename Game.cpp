@@ -4,6 +4,7 @@
 #include <random>
 #include <iostream>
 #include <algorithm>
+#include <cstring>
 #include "Game.h"
 
 uint8_t Game::get_next_block() {
@@ -68,6 +69,7 @@ const cCoord Game::struct_origins[] = {
 
 Game::Game() {
     create_block();
+    std::memset(matrix, NULL, sizeof(matrix[0][0]) * height * width);
 }
 
 
@@ -267,6 +269,8 @@ void Game::controls (unsigned int &last_time) {
                 case SDLK_SPACE :
                     while(!get_last_block().move_down(structList))
                         ;
+                    for (auto &b : get_last_block().coords)
+                        matrix[b.get_x()][b.get_y()] = &b;
                     break;
                 case SDLK_ESCAPE :
                     exit(0);
@@ -280,53 +284,51 @@ void Game::controls (unsigned int &last_time) {
 }
 
 void Game::destroy() {
-    bool fall_flag          = false;     // Flag to indicate whether the blocks should fall
     bool row_destroyed_flag = false;     // Flag indicating whether a row has been destroyed
 
-    int row_to_destroy;         // Y value indicating the row to be destroyed
-    std::vector<int> row_counter(height);    // Counter, to know which row to destroy
     int rows_been_destroyed = 0; // Count of how many rows have been destroyed to be used when calculating fall distance
 
-    do {
-        row_destroyed_flag = false;
-        // Set the counter to 0
+    int counter; // To count blocks to check for a completed row
 
-        // Iterate through all the blocks, check if there are any complete rows, if so, destroy them
-        for (auto &s : structList)
-            for (auto &b : s.coords) {
-                // If there is a complete row
-                if (++(row_counter[b.get_y()]) >= width) {
-                    row_to_destroy = b.get_y();
-                    std::fill(row_counter.begin(), row_counter.end(), 0);
-                    // Destroy the blocks in the row
+    do  {
+        row_destroyed_flag = false;
+        for (int y = height - 1; y >= 0; --y) {
+            counter = 0;
+            for (int x = 0; x < width; ++x) {
+                if (matrix[x][y] != nullptr)
+                    ++counter;
+                if (counter >= width) {
                     ++rows_been_destroyed;
+                    for (int i = 0; i < width; ++i)
+                        matrix[i][y] = nullptr;
                     for (auto &s : structList)
-                        for (auto block_iter = s.coords.begin(); block_iter != s.coords.end();) {
-                            if (block_iter->get_y() == row_to_destroy) {
-                                block_iter = s.coords.erase(block_iter);
-                                fall_flag = row_destroyed_flag = true;
-                                continue;
+                        for (auto iter = s.coords.begin(); iter != s.coords.end();) {
+                            if (iter->get_y() == y) {
+                                iter = s.coords.erase(iter);
                             }
-                            ++block_iter;
+                            else
+                                ++iter;
                         }
+
+                    // The blocks shall fall!!!
+                    for (auto &s : structList)
+                        for (auto &b : s.coords)
+                            if (b.get_y() < y) {
+                                matrix[b.get_x()][b.get_y()] = nullptr;
+                                b.move_down(); // Fall by how many rows have been destroyed
+                                matrix[b.get_x()][b.get_y()] = &b;
+                            }
                 }
             }
-    } while (row_destroyed_flag); // Re-iterate if a row was destroyed
+        }
+    } while (row_destroyed_flag);
+
 
     if (rows_been_destroyed <= 4)
         score += (100 * rows_been_destroyed);
     else if (rows_been_destroyed > 4)
         score += (200 * rows_been_destroyed);
 
-    // If blocks have been destroyed, make the blocks above fall
-    if (fall_flag) {
-        // Iterate through the blocks, making the blocks above the destroyed row fall
-        for (auto &s : structList)
-            for (auto &b : s.coords)
-                if (b.get_y() < row_to_destroy) {
-                    b.move_down(rows_been_destroyed); // Fall by how many rows have been destroyed
-                }
-    }
 }
 
 void Game::gameOverChecker() {
@@ -360,6 +362,8 @@ bool Game::collision_detector_x(int x, int y, std::vector<Structure> &structList
                 return true;
     return false;
 }
+
+
 
 
 

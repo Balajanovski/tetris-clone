@@ -57,12 +57,15 @@ public:
     void create_block();
     Structure& get_last_block();
     void destroy(); // Destroy blocks in a line and then make all blocks ontop fall down
-    static bool collision_detector_y(int x, int y, std::vector<Structure> &structList);
     static bool collision_detector_x(int x, int y, std::vector<Structure> &structList);
+    static bool collision_detector_y(int x, int y, std::vector<Structure> &structList);
 
     // Getters
     bool isGameOver() const;
     std::vector<Structure> &getStructList();
+
+    // Matrix holding all the fallen block's data
+    Block *matrix[width][height];
 
     // General game methods
     void init();
