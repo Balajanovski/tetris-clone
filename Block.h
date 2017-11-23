@@ -1,5 +1,5 @@
 //
-// Created by JULIA BALAJAN on 3/12/2016.
+// Created by Balajanovski on 3/12/2016.
 //
 
 #ifndef TETRIS_BLOCK_H
